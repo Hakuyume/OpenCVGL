@@ -1,19 +1,14 @@
 #include <GL/glut.h>
 #include <math.h>
 #include <vector>
-
-class Particle
-{
-public:
-  double x, y, z;
-};
+#include <Eigen/Eigen>
 
 bool left_button = false;
 double r = 50;
 double theta = 0;
 double phi = 0;
 
-std::vector<Particle> objs;
+std::vector<Eigen::Vector3d> objs;
 
 void display(void)
 {
@@ -41,10 +36,10 @@ void display(void)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  std::vector<Particle>::iterator it;
+  std::vector<Eigen::Vector3d>::iterator it;
   for (it = objs.begin(); it != objs.end(); it++){
     glPushMatrix();
-    glTranslated(it->x, it->y, it->z);
+    glTranslated((*it)(0), (*it)(1), (*it)(2));
     glutSolidSphere(1, 12, 12);
     glPopMatrix();
   }
@@ -126,13 +121,10 @@ int main(int argc, char *argv[])
   glutMotionFunc(&motion);
   glutPassiveMotionFunc(&motion);
 
-  Particle obj;
   for (int i = 0; i < 5000; i++){
-    obj.x = ((double)rand() / RAND_MAX - 0.5) * 20;
-    obj.y = ((double)rand() / RAND_MAX - 0.5) * 20;
-    obj.z = ((double)rand() / RAND_MAX - 0.5) * 20;
-
-    objs.push_back(obj);
+    Eigen::Vector3d p;
+    p << rand(), rand(), rand();
+    objs.push_back(((p / RAND_MAX).array() - 0.5) * 20);
   }
 
   glutPostRedisplay();
