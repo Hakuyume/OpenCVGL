@@ -1,30 +1,9 @@
 #include <GL/glut.h>
 #include <math.h>
 #include <vector>
-#include <Eigen/Eigen>
+#include "phys.hpp"
 
 #define INTERVAL 0.01
-#define GRAVITY 98
-
-#define P_PARAM 1000
-#define D_PARAM 100
-
-class Particle
-{
-public:
-  Eigen::Vector3d p, v, a;
-  void move(double dt);
-};
-
-void Particle::move(double dt)
-{
-  this->a << 0, -GRAVITY, 0;
-  if (this->p(1) < 0)
-    this->a(1) -= P_PARAM * this->p(1) + D_PARAM * this->v(1);
-
-  this->p += (this->v + this->a * dt / 2) * dt;
-  this->v += this->a * dt;
-}
 
 bool left_button = false;
 double r = 50;
