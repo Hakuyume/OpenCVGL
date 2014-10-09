@@ -1,10 +1,19 @@
 #include <GL/glut.h>
 #include <math.h>
+#include <vector>
+
+class Particle
+{
+public:
+  double x, y, z;
+};
 
 bool left_button = false;
 double r = 50;
 double theta = 0;
 double phi = 0;
+
+std::vector<Particle> objs;
 
 void display(void)
 {
@@ -33,12 +42,13 @@ void display(void)
   glRotated(theta, 0, 1, 0);
   glRotated(phi, 1, 0, 0);
 
-  GLfloat facecolor[] = {0, 0, 1, 0.5};
+  GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  for (int i = 0; i < 10; i++){
+  std::vector<Particle>::iterator it;
+  for (it = objs.begin(); it != objs.end(); it++){
     glPushMatrix();
-    glTranslated(0, 0, i);
+    glTranslated(it->x, it->y, it->z);
     glutSolidSphere(1, 12, 12);
     glPopMatrix();
   }
@@ -107,6 +117,15 @@ int main(int argc, char *argv[])
   glutMouseFunc(&mouse);
   glutMotionFunc(&motion);
   glutPassiveMotionFunc(&motion);
+
+  Particle obj;
+  for (int i = 0; i < 5000; i++){
+    obj.x = ((double)rand() / RAND_MAX - 0.5) * 20;
+    obj.y = ((double)rand() / RAND_MAX - 0.5) * 20;
+    obj.z = ((double)rand() / RAND_MAX - 0.5) * 20;
+
+    objs.push_back(obj);
+  }
 
   glutPostRedisplay();
 
