@@ -3,12 +3,35 @@
 #include <vector>
 #include <Eigen/Eigen>
 
+#define INTERVAL 0.01
+#define GRAVITY 98
+
+#define P_PARAM 1000
+#define D_PARAM 100
+
+class Particle
+{
+public:
+  Eigen::Vector3d p, v, a;
+  void move(double dt);
+};
+
+void Particle::move(double dt)
+{
+  this->a << 0, -GRAVITY, 0;
+  if (this->p(1) < 0)
+    this->a(1) -= P_PARAM * this->p(1) + D_PARAM * this->v(1);
+
+  this->p += (this->v + this->a * dt / 2) * dt;
+  this->v += this->a * dt;
+}
+
 bool left_button = false;
 double r = 50;
 double theta = 0;
 double phi = 0;
 
-std::vector<Eigen::Vector3d> objs;
+std::vector<Particle> particles;
 
 void display(void)
 {
@@ -36,11 +59,13 @@ void display(void)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  std::vector<Eigen::Vector3d>::iterator it;
-  for (it = objs.begin(); it != objs.end(); it++){
+  glTranslated(0, -10, 0);
+
+  std::vector<Particle>::iterator it;
+  for (it = particles.begin(); it != particles.end(); it++){
     glPushMatrix();
-    glTranslated((*it)(0), (*it)(1), (*it)(2));
-    glutSolidSphere(1, 12, 12);
+    glTranslated(it->p(0), it->p(1), it->p(2));
+    glutSolidSphere(0.5, 12, 12);
     glPopMatrix();
   }
 
@@ -99,6 +124,15 @@ void motion(int x, int y)
   glutPostRedisplay();
 }
 
+void timer(int value)
+{
+  std::vector<Particle>::iterator it;
+  for (it = particles.begin(); it != particles.end(); it++)
+    it->move(INTERVAL);
+  glutTimerFunc(INTERVAL * 1000, &timer, 0);
+  glutPostRedisplay();
+}
+
 int main(int argc, char *argv[])
 {
   glutInit(&argc, argv);
@@ -120,11 +154,15 @@ int main(int argc, char *argv[])
   glutMouseFunc(&mouse);
   glutMotionFunc(&motion);
   glutPassiveMotionFunc(&motion);
+  glutTimerFunc(0, &timer, 0);
 
-  for (int i = 0; i < 5000; i++){
-    Eigen::Vector3d p;
-    p << rand(), rand(), rand();
-    objs.push_back(((p / RAND_MAX).array() - 0.5) * 20);
+  for (int i = 0; i < 1000; i++){
+    Particle pt;
+    pt.p << rand(), rand(), rand();
+    pt.p = ((pt.p / RAND_MAX).array() - 0.5) * 10;
+    pt.p(1) += 20;
+    pt.v << 0, 0, 0;
+    particles.push_back(pt);
   }
 
   glutPostRedisplay();
