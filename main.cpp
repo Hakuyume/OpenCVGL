@@ -19,10 +19,6 @@ void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(30.0, 1.0, 0.1, 100);
-
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(
@@ -57,6 +53,17 @@ void display(void)
   glDisable(GL_LIGHTING);
 
   glutSwapBuffers();
+}
+
+void reshape(int width, int height)
+{
+  glViewport(0, 0, width, height);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(30.0, (double)width / height, 0.1, 100);
+
+  glutPostRedisplay();
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -113,6 +120,7 @@ int main(int argc, char *argv[])
   glClearColor(0, 0, 0, 0);
 
   glutDisplayFunc(&display);
+  glutReshapeFunc(&reshape);
   glutKeyboardFunc(&keyboard);
   glutMouseFunc(&mouse);
   glutMotionFunc(&motion);
