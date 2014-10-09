@@ -1,4 +1,5 @@
 #include <GL/glut.h>
+#include <math.h>
 
 bool left_button = false;
 double r = 50;
@@ -8,8 +9,6 @@ double phi = 0;
 void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glEnable(GL_DEPTH_TEST);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -23,10 +22,29 @@ void display(void)
 	    0, 1, 0
 	    );
 
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+
+  GLfloat lightpos[] = {50, 50, 50, 0};
+  GLfloat diffuse[] = {10, 10, 10, 1};
+  glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+
   glRotated(theta, 0, 1, 0);
   glRotated(phi, 1, 0, 0);
 
-  glDisable(GL_DEPTH_TEST);
+  GLfloat facecolor[] = {0, 0, 1, 0.5};
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
+
+  for (int i = 0; i < 10; i++){
+    glPushMatrix();
+    glTranslated(0, 0, i);
+    glutSolidSphere(1, 12, 12);
+    glPopMatrix();
+  }
+
+  glDisable(GL_LIGHT0);
+  glDisable(GL_LIGHTING);
 
   glutSwapBuffers();
 }
@@ -76,6 +94,11 @@ int main(int argc, char *argv[])
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutInitWindowSize(600, 600);
   glutCreateWindow("main");
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
 
   glClearColor(0, 0, 0, 0);
 
