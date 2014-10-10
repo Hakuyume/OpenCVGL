@@ -14,7 +14,7 @@ void Space::find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3
 
   std::vector<Particle>::iterator it;
   for (it = this->particles.begin(); it != this->particles.end(); it++)
-    if ((pos - it->p).norm() <= r)
+    if (pos != it->p && (pos - it->p).norm() <= r)
       neighbor.push_back(&(*it));
 }
 
@@ -30,11 +30,13 @@ void Particle::update_force(Space space)
   }
 
   std::vector<Particle*> neighbor;
-  space.find_neighbor(neighbor, this->p, 0.5);
+  space.find_neighbor(neighbor, this->p, 1);
 
   std::vector<Particle*>::iterator it;
-  for (it = neighbor.begin(); it != neighbor.end(); it++)
-    this->a -= P_PARAM * ((*it)->p - this->p);
+  for (it = neighbor.begin(); it != neighbor.end(); it++){
+    double r = ((*it)->p - this->p).norm();
+    this->a -= 100 * (1 - r) * ((*it)->p - this->p) / r;
+  }
 }
 
 void Particle::update_position(const double dt)
