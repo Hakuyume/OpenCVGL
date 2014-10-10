@@ -36,8 +36,6 @@ void display(void)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  glTranslated(0, -10, 0);
-
   std::vector<Particle>::iterator it;
   for (it = space.particles.begin(); it != space.particles.end(); it++){
     glPushMatrix();
@@ -142,7 +140,6 @@ int main(int argc, char *argv[])
     Eigen::Vector3d pos;
     pos << rand(), rand(), rand();
     pos = ((pos / RAND_MAX).array() - 0.5) * 10;
-    pos(1) += 20;
     space.add_particle(pos);
   }
 

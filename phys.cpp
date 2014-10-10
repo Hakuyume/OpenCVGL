@@ -22,8 +22,12 @@ void Particle::update_force(Space space)
 {
   this->a << 0, -GRAVITY, 0;
 
-  if (this->p(1) < 0)
-    this->a(1) -= P_PARAM * this->p(1) + D_PARAM * this->v(1);
+  for (int i = 0; i < 3; i++){
+    if (this->p(i) < -BOXSIZE)
+      this->a(i) -= P_PARAM * (this->p(i) + BOXSIZE) + D_PARAM * this->v(i);
+    if (this->p(i) > +BOXSIZE)
+      this->a(i) -= P_PARAM * (this->p(i) - BOXSIZE) + D_PARAM * this->v(i);
+  }
 
   std::vector<Particle*> neighbor;
   space.find_neighbor(neighbor, this->p, 0.5);

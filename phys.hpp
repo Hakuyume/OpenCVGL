@@ -7,6 +7,8 @@
 #define P_PARAM 1000
 #define D_PARAM 100
 
+#define BOXSIZE 10
+
 class Space;
 class Particle;
 
