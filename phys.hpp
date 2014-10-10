@@ -7,6 +7,16 @@
 #define P_PARAM 1000
 #define D_PARAM 100
 
+class Space;
+class Particle;
+
+class Space
+{
+public:
+  std::vector<Particle> particles;
+  void add_particle(Eigen::Vector3d pos);
+};
+
 class Particle
 {
 private:

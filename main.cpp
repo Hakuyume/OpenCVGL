@@ -1,6 +1,4 @@
 #include <GL/glut.h>
-#include <math.h>
-#include <vector>
 #include "phys.hpp"
 
 #define INTERVAL 0.01
@@ -10,7 +8,7 @@ double r = 50;
 double theta = 0;
 double phi = 0;
 
-std::vector<Particle> particles;
+Space space;
 
 void display(void)
 {
@@ -41,7 +39,7 @@ void display(void)
   glTranslated(0, -10, 0);
 
   std::vector<Particle>::iterator it;
-  for (it = particles.begin(); it != particles.end(); it++){
+  for (it = space.particles.begin(); it != space.particles.end(); it++){
     glPushMatrix();
     glTranslated(it->p(0), it->p(1), it->p(2));
     glutSolidSphere(0.5, 12, 12);
@@ -107,10 +105,10 @@ void timer(int value)
 {
   std::vector<Particle>::iterator it;
 
-  for (it = particles.begin(); it != particles.end(); it++)
+  for (it = space.particles.begin(); it != space.particles.end(); it++)
     it->update_force();
 
-  for (it = particles.begin(); it != particles.end(); it++)
+  for (it = space.particles.begin(); it != space.particles.end(); it++)
     it->update_position(INTERVAL);
 
   glutTimerFunc(INTERVAL * 1000, &timer, 0);
@@ -141,12 +139,11 @@ int main(int argc, char *argv[])
   glutTimerFunc(0, &timer, 0);
 
   for (int i = 0; i < 1000; i++){
-    Particle pt;
-    pt.p << rand(), rand(), rand();
-    pt.p = ((pt.p / RAND_MAX).array() - 0.5) * 10;
-    pt.p(1) += 20;
-    pt.v << 0, 0, 0;
-    particles.push_back(pt);
+    Eigen::Vector3d pos;
+    pos << rand(), rand(), rand();
+    pos = ((pos / RAND_MAX).array() - 0.5) * 10;
+    pos(1) += 20;
+    space.add_particle(pos);
   }
 
   glutPostRedisplay();
