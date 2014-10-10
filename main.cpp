@@ -106,7 +106,7 @@ void timer(int value)
   std::vector<Particle>::iterator it;
 
   for (it = space.particles.begin(); it != space.particles.end(); it++)
-    it->update_force();
+    it->update_force(space);
 
   for (it = space.particles.begin(); it != space.particles.end(); it++)
     it->update_position(INTERVAL);
