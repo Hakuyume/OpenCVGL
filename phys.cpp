@@ -35,7 +35,8 @@ void Particle::update_force(Space space)
   std::vector<Particle*>::iterator it;
   for (it = neighbor.begin(); it != neighbor.end(); it++){
     double r = ((*it)->p - this->p).norm();
-    this->a -= 100 * (1 - r) * ((*it)->p - this->p) / r;
+    this->a -= P_PARAM * (1 - r) * ((*it)->p - this->p) / r;
+    this->a += D_PARAM * (1 - r) * ((*it)->v - this->v);
   }
 }
 
