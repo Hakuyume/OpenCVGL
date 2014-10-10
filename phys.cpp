@@ -18,6 +18,17 @@ void Space::find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3
       neighbor.push_back(&(*it));
 }
 
+void Space::update_particles(const double dt)
+{
+  std::vector<Particle>::iterator it;
+
+  for (it = this->particles.begin(); it != this->particles.end(); it++)
+    it->update_force(*this);
+
+  for (it = this->particles.begin(); it != this->particles.end(); it++)
+    it->update_position(dt);
+}
+
 void Particle::update_force(Space space)
 {
   this->a << 0, -GRAVITY, 0;
