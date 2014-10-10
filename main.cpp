@@ -106,8 +106,13 @@ void motion(int x, int y)
 void timer(int value)
 {
   std::vector<Particle>::iterator it;
+
   for (it = particles.begin(); it != particles.end(); it++)
-    it->move(INTERVAL);
+    it->update_force();
+
+  for (it = particles.begin(); it != particles.end(); it++)
+    it->update_position(INTERVAL);
+
   glutTimerFunc(INTERVAL * 1000, &timer, 0);
   glutPostRedisplay();
 }
