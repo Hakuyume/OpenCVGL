@@ -26,7 +26,11 @@ void Particle::update_force(Space space)
     this->a(1) -= P_PARAM * this->p(1) + D_PARAM * this->v(1);
 
   std::vector<Particle*> neighbor;
-  space.find_neighbor(neighbor, this->p, 10);
+  space.find_neighbor(neighbor, this->p, 0.5);
+
+  std::vector<Particle*>::iterator it;
+  for (it = neighbor.begin(); it != neighbor.end(); it++)
+    this->a -= P_PARAM * ((*it)->p - this->p);
 }
 
 void Particle::update_position(const double dt)
