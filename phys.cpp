@@ -1,6 +1,6 @@
 #include "phys.hpp"
 
-void Space::add_particle(Eigen::Vector3d pos)
+void Space::add_particle(const Eigen::Vector3d& pos)
 {
   Particle pt;
   pt.p = pos;

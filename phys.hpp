@@ -16,7 +16,7 @@ class Space
 {
 public:
   std::vector<Particle> particles;
-  void add_particle(Eigen::Vector3d pos);
+  void add_particle(const Eigen::Vector3d& pos);
   void find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3d& pos, const double r);
   void update_particles(const double dt);
 };
