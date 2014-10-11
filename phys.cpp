@@ -2,7 +2,6 @@
 
 #define P_PARAM 1000
 #define D_PARAM 100
-#define V_PARAM 1
 
 #define KERNEL_SIZE 0.5
 
@@ -17,6 +16,19 @@ double kernel(const Eigen::Vector3d& r, const double h)
     return k * (2 - q) * (2 - q) * (2 - q);
   else
     return 0;
+}
+
+Eigen::Vector3d kernel_grad(const Eigen::Vector3d& r, const double h)
+{
+  double q = r.norm() / h;
+  double k = 1.0 / (M_PI * h * h * h);
+
+  if (0 <= q && q <= 1)
+    return k * (- 1.5 / r.norm() + 1.5 / h) * r / h;
+  else if (1 < q && q <= 2)
+    return k * (- 12 / r.norm() + 12 / h - 2 * q / h) * r / h;
+  else
+    return Eigen::Vector3d::Zero();
 }
 
 void Space::add_particle(const Eigen::Vector3d& pos)
@@ -60,10 +72,12 @@ void Particle::update_density(Space& space)
 void Particle::update_velocity(Space& space, const double dt)
 {
   Eigen::Vector3d f_v(0, 0, 0);
-  for (auto& pt : this->neighbor)
-    f_v += V_PARAM * (pt->v - this->v) / pt->r * kernel(pt->p - this->p, KERNEL_SIZE);
-
   Eigen::Vector3d f_p(0, 0, 0);
+
+  for (auto& pt : this->neighbor){
+    f_v += 10 * (pt->v - this->v) / pt->r * kernel(pt->p - this->p, KERNEL_SIZE);
+    f_p -= 1 * (pt->r + this->r - 3) / pt->r * kernel_grad(pt->p - this->p, KERNEL_SIZE);
+  }
 
   Eigen::Vector3d f_e = space.gravity;
   for (int i = 0; i < 3; i++){
