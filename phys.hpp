@@ -3,9 +3,6 @@
 #include <vector>
 #include <Eigen/Eigen>
 
-#define P_PARAM 1000
-#define D_PARAM 100
-
 #define BOXSIZE 10
 
 class Space;
@@ -23,10 +20,8 @@ public:
 
 class Particle
 {
-private:
-  Eigen::Vector3d a;
 public:
   Eigen::Vector3d p, v;
-  void update_force(Space& space);
+  void update_velocity(Space& space, const double dt);
   void update_position(const double dt);
 };

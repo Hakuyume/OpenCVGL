@@ -1,5 +1,22 @@
 #include "phys.hpp"
 
+#define P_PARAM 1000
+#define D_PARAM 100
+#define V_PARAM 1
+
+double kernel(const Eigen::Vector3d& r, const double h)
+{
+  double q = r.norm() / h;
+  double k = 1.0 / (M_PI * h * h * h);
+
+  if (0 <= q && q <= 1)
+    return k * (1 - 1.5 * q + 0.75 * q * q);
+  else if (1 < q && q <= 2)
+    return k * (2 - q) * (2 - q) * (2 - q);
+  else
+    return 0;
+}
+
 void Space::add_particle(const Eigen::Vector3d& pos)
 {
   Particle pt;
@@ -20,35 +37,37 @@ void Space::find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3
 void Space::update_particles(const double dt)
 {
   for (auto& pt : this->particles)
-    pt.update_force(*this);
+    pt.update_velocity(*this, dt);
 
   for (auto& pt : this->particles)
     pt.update_position(dt);
 }
 
-void Particle::update_force(Space& space)
+void Particle::update_velocity(Space& space, const double dt)
 {
-  this->a = space.gravity;
-
-  for (int i = 0; i < 3; i++){
-    if (this->p(i) < -BOXSIZE)
-      this->a(i) -= P_PARAM * (this->p(i) + BOXSIZE) + D_PARAM * this->v(i);
-    if (this->p(i) > +BOXSIZE)
-      this->a(i) -= P_PARAM * (this->p(i) - BOXSIZE) + D_PARAM * this->v(i);
-  }
+  double h = 0.5;
 
   std::vector<Particle*> neighbor;
-  space.find_neighbor(neighbor, this->p, 1);
+  space.find_neighbor(neighbor, this->p, 2 * h);
 
-  for (auto& pt : neighbor){
-    double r = (pt->p - this->p).norm();
-    this->a -= P_PARAM * (1 - r) * (pt->p - this->p) / r;
-    this->a += D_PARAM * (1 - r) * (pt->v - this->v);
+  Eigen::Vector3d f_v(0, 0, 0);
+  for (auto& pt : neighbor)
+    f_v += V_PARAM * (pt->v - this->v) * kernel(pt->p - this->p, h);
+
+  Eigen::Vector3d f_p(0, 0, 0);
+
+  Eigen::Vector3d f_e = space.gravity;
+  for (int i = 0; i < 3; i++){
+    if (this->p(i) < -BOXSIZE)
+      f_e(i) -= P_PARAM * (this->p(i) + BOXSIZE) + D_PARAM * this->v(i);
+    if (this->p(i) > +BOXSIZE)
+      f_e(i) -= P_PARAM * (this->p(i) - BOXSIZE) + D_PARAM * this->v(i);
   }
+
+  this->v += (f_v + f_p + f_e) * dt;
 }
 
 void Particle::update_position(const double dt)
 {
-  this->p += (this->v + this->a * dt / 2) * dt;
-  this->v += this->a * dt;
+  this->p += this->v * dt;
 }
