@@ -35,9 +35,9 @@ void display(void)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  for (auto it = space.particles.begin(); it != space.particles.end(); it++){
+  for (auto& pt : space.particles){
     glPushMatrix();
-    glTranslated(it->p(0), it->p(1), it->p(2));
+    glTranslated(pt.p(0), pt.p(1), pt.p(2));
     glutSolidSphere(0.5, 12, 12);
     glPopMatrix();
   }

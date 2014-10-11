@@ -12,18 +12,18 @@ void Space::find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3
 {
   neighbor.clear();
 
-  for (auto it = this->particles.begin(); it != this->particles.end(); it++)
-    if (pos != it->p && (pos - it->p).norm() <= r)
-      neighbor.push_back(&(*it));
+  for (auto& pt : this->particles)
+    if (pos != pt.p && (pos - pt.p).norm() <= r)
+      neighbor.push_back(&pt);
 }
 
 void Space::update_particles(const double dt)
 {
-  for (auto it = this->particles.begin(); it != this->particles.end(); it++)
-    it->update_force(*this);
+  for (auto& pt : this->particles)
+    pt.update_force(*this);
 
-  for (auto it = this->particles.begin(); it != this->particles.end(); it++)
-    it->update_position(dt);
+  for (auto& pt : this->particles)
+    pt.update_position(dt);
 }
 
 void Particle::update_force(Space& space)
@@ -40,10 +40,10 @@ void Particle::update_force(Space& space)
   std::vector<Particle*> neighbor;
   space.find_neighbor(neighbor, this->p, 1);
 
-  for (auto it = neighbor.begin(); it != neighbor.end(); it++){
-    double r = ((*it)->p - this->p).norm();
-    this->a -= P_PARAM * (1 - r) * ((*it)->p - this->p) / r;
-    this->a += D_PARAM * (1 - r) * ((*it)->v - this->v);
+  for (auto& pt : neighbor){
+    double r = (pt->p - this->p).norm();
+    this->a -= P_PARAM * (1 - r) * (pt->p - this->p) / r;
+    this->a += D_PARAM * (1 - r) * (pt->v - this->v);
   }
 }
 
