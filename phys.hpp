@@ -20,8 +20,12 @@ public:
 
 class Particle
 {
+private:
+  double r;
+  std::vector<Particle*> neighbor;
 public:
   Eigen::Vector3d p, v;
+  void update_density(Space& space);
   void update_velocity(Space& space, const double dt);
   void update_position(const double dt);
 };

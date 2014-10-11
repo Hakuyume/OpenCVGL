@@ -4,6 +4,8 @@
 #define D_PARAM 100
 #define V_PARAM 1
 
+#define KERNEL_SIZE 0.5
+
 double kernel(const Eigen::Vector3d& r, const double h)
 {
   double q = r.norm() / h;
@@ -37,22 +39,29 @@ void Space::find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3
 void Space::update_particles(const double dt)
 {
   for (auto& pt : this->particles)
+    pt.update_density(*this);
+
+  for (auto& pt : this->particles)
     pt.update_velocity(*this, dt);
 
   for (auto& pt : this->particles)
     pt.update_position(dt);
 }
 
+void Particle::update_density(Space& space)
+{
+  space.find_neighbor(this->neighbor, this->p, 2 * KERNEL_SIZE);
+
+  this->r = 0;
+  for (auto& pt : this->neighbor)
+    this->r += kernel(pt->p - this->p, KERNEL_SIZE);
+}
+
 void Particle::update_velocity(Space& space, const double dt)
 {
-  double h = 0.5;
-
-  std::vector<Particle*> neighbor;
-  space.find_neighbor(neighbor, this->p, 2 * h);
-
   Eigen::Vector3d f_v(0, 0, 0);
-  for (auto& pt : neighbor)
-    f_v += V_PARAM * (pt->v - this->v) * kernel(pt->p - this->p, h);
+  for (auto& pt : this->neighbor)
+    f_v += V_PARAM * (pt->v - this->v) / pt->r * kernel(pt->p - this->p, KERNEL_SIZE);
 
   Eigen::Vector3d f_p(0, 0, 0);
 
