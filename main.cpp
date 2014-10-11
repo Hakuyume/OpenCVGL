@@ -7,7 +7,6 @@
 bool left_button = false;
 double r = 50;
 double theta = 0;
-double phi = 0;
 
 Space space;
 
@@ -31,7 +30,6 @@ void display(void)
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-  glRotated(phi * 180 / M_PI, 1, 0, 0);
   glRotated(theta * 180 / M_PI, 0, 0, 1);
 
   GLfloat facecolor[] = {0, 0, 1, 0.7};
@@ -88,17 +86,15 @@ void mouse(int button, int state, int x, int y)
 
 void motion(int x, int y)
 {
-  static int x0, y0;
+  static int x0;
 
   if (left_button){
     theta += 0.01 * (x - x0);
-    phi += 0.01 * (y - y0);
 
     space.gravity << sin(theta), cos(theta), 0;
     space.gravity *= -GRAVITY;
   }
   x0 = x;
-  y0 = y;
 
   glutPostRedisplay();
 }
