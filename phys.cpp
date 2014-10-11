@@ -29,9 +29,9 @@ void Space::update_particles(const double dt)
     it->update_position(dt);
 }
 
-void Particle::update_force(Space space)
+void Particle::update_force(Space& space)
 {
-  this->a << 0, -GRAVITY, 0;
+  this->a = space.gravity;
 
   for (int i = 0; i < 3; i++){
     if (this->p(i) < -BOXSIZE)

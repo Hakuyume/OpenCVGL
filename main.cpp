@@ -2,6 +2,7 @@
 #include "phys.hpp"
 
 #define INTERVAL 0.01
+#define GRAVITY 98
 
 bool left_button = false;
 double r = 50;
@@ -30,8 +31,8 @@ void display(void)
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-  glRotated(theta, 0, 1, 0);
-  glRotated(phi, 1, 0, 0);
+  glRotated(phi * 180 / M_PI, 1, 0, 0);
+  glRotated(theta * 180 / M_PI, 0, 0, 1);
 
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
@@ -90,8 +91,11 @@ void motion(int x, int y)
   static int x0, y0;
 
   if (left_button){
-    theta += 0.5 * (x - x0);
-    phi += 0.5 * (y - y0);
+    theta += 0.01 * (x - x0);
+    phi += 0.01 * (y - y0);
+
+    space.gravity << sin(theta), cos(theta), 0;
+    space.gravity *= -GRAVITY;
   }
   x0 = x;
   y0 = y;
@@ -130,6 +134,8 @@ int main(int argc, char *argv[])
   glutMotionFunc(&motion);
   glutPassiveMotionFunc(&motion);
   glutTimerFunc(0, &timer, 0);
+
+  space.gravity << 0, -GRAVITY, 0;
 
   for (int i = 0; i < 1000; i++){
     Eigen::Vector3d pos;
