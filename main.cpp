@@ -35,8 +35,7 @@ void display(void)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  std::vector<Particle>::iterator it;
-  for (it = space.particles.begin(); it != space.particles.end(); it++){
+  for (auto it = space.particles.begin(); it != space.particles.end(); it++){
     glPushMatrix();
     glTranslated(it->p(0), it->p(1), it->p(2));
     glutSolidSphere(0.5, 12, 12);
