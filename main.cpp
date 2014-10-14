@@ -3,13 +3,14 @@
 #include "phys.hpp"
 
 #define INTERVAL 0.01
-#define GRAVITY 98
+#define GRAVITY 9.8
 
 bool left_button = false;
 double r = 50;
 double theta = 0;
 
 Particles* p_ps;
+Eigen::Vector3d g(0, -GRAVITY, 0);
 
 void display(void)
 {
@@ -93,8 +94,8 @@ void motion(int x, int y)
   if (left_button){
     theta += 0.01 * (x - x0);
 
-    //    space.gravity << sin(theta), cos(theta), 0;
-    //    space.gravity *= -GRAVITY;
+    g << sin(theta), cos(theta), 0;
+    g *= -GRAVITY;
   }
   x0 = x;
 

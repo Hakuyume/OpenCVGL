@@ -239,10 +239,9 @@ void calc_force( Particles* p_ps, NeighborMap* p_nbr_map )
 
 void advance( Particles* p_ps, NeighborMap* p_nbr_map )
 {
-  Eigen::Vector3d accel, g, norm;
+  Eigen::Vector3d accel, norm;
   double speed, diff, adj;
-  
-  g << 0.0, -9.8, 0.0;
+
   FOR_EACH_PARTICLE( p_p, p_ps )
     {
       accel = p_p->f * SPH_PMASS;

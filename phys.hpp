@@ -13,3 +13,5 @@ typedef std::vector<Particle> Particles;
 
 void simulation( Particles* );
 Particles* new_particles(void);
+
+extern Eigen::Vector3d g;
