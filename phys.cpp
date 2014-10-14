@@ -81,7 +81,7 @@ void delete_neighbor_map( NeighborMap* p_nbr_map )
   delete p_nbr_map;
 }
 
-ParticlePtrs neighbor( NeighborMap* p_nbr_map, Eigen::Vector3d r )
+ParticlePtrs Space::neighbor(Eigen::Vector3d r)
 {
   ParticlePtrs ptrs;
   double d = H / SPH_SIMSCALE;
@@ -96,7 +96,7 @@ ParticlePtrs neighbor( NeighborMap* p_nbr_map, Eigen::Vector3d r )
 	     MIN(2) <= v(2) && v(2) <= MAX(2) )
         {
           NeighborMapIdx ix = neighbor_map_idx( v );
-          NeighborMap::iterator x = p_nbr_map->find(ix);
+          NeighborMap::iterator x = this->p_nbr_map->find(ix);
           if ( x != p_nbr_map->end() )
             {
               FOR_EACH_PARTICLE_PTR( p_ptr, &(x->second) )
@@ -128,7 +128,8 @@ void Space::update_particles(const double dt)
   this->p_nbr_map = new_neighbor_map(&(this->particles));
   calc_amount();
   calc_force();
-  advance();
+  for (auto& pt : this->particles)
+    pt.advance(*this);
   delete_neighbor_map(this->p_nbr_map);
 }
 
@@ -144,7 +145,7 @@ void Space::calc_amount(void)
   FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       sum  = 0.0;
-      ptrs = neighbor( this->p_nbr_map, p_p->pos );
+      ptrs = this->neighbor(p_p->pos);
       FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
         {
           p_pj= *p_ptr;
@@ -172,7 +173,7 @@ void Space::calc_force(void)
   FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       force << 0.0, 0.0, 0.0;
-      ptrs = neighbor( this->p_nbr_map, p_p->pos );
+      ptrs = this->neighbor(p_p->pos);
       FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
         {
           p_pj = *p_ptr;
@@ -193,71 +194,68 @@ void Space::calc_force(void)
     }
 }
 
-void Space::advance(void)
+void Particle::advance(const Space& space)
 {
   Eigen::Vector3d accel, norm;
   double speed, diff, adj;
-
-  FOR_EACH_PARTICLE( p_p, &(this->particles) )
+  
+  accel = this->f * SPH_PMASS;
+  
+  speed = accel.norm() * accel.norm();
+  if ( speed > SPH_LIMIT*SPH_LIMIT ) {
+    accel *= SPH_LIMIT / sqrt(speed);
+  }
+  
+  // Z-axis walls
+  diff = 2.0 * SPH_RADIUS - ( this->pos(2) - MIN(2) ) * SPH_SIMSCALE;
+  if ( diff > SPH_EPSILON )
     {
-      accel = p_p->f * SPH_PMASS;
-      
-      speed = accel.norm() * accel.norm();
-      if ( speed > SPH_LIMIT*SPH_LIMIT ) {
-        accel *= SPH_LIMIT / sqrt(speed);
-      }
-      
-      // Z-axis walls
-      diff = 2.0 * SPH_RADIUS - ( p_p->pos(2) - MIN(2) ) * SPH_SIMSCALE;
-      if ( diff > SPH_EPSILON )
-        {
-          norm << 0.0, 0.0, 1.0;
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * p_p->vel(2);
-          accel += adj * norm;
-        }
-      diff = 2.0 * SPH_RADIUS - ( MAX(2) - p_p->pos(2) ) * SPH_SIMSCALE;
-      if ( diff > SPH_EPSILON )
-        {
-          norm << 0.0, 0.0, -1.0;
-          adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * p_p->vel(2);
-          accel += adj * norm;
-        }
-     
-      // X-axis walls
-      diff = 2.0 * SPH_RADIUS - ( p_p->pos(0) - MIN(0) ) * SPH_SIMSCALE;
-      if ( diff > SPH_EPSILON )
-        {
-          norm << 1.0, 0.0, 0.0;
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * p_p->vel(0);
-          accel += adj * norm;
-        }
-      diff = 2.0 * SPH_RADIUS - ( MAX(0) - p_p->pos(0) ) * SPH_SIMSCALE;
-      if ( diff > SPH_EPSILON )
-        {
-          norm << -1.0, 0.0, 0.0;
-          adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * p_p->vel(0);
-          accel += adj * norm;
-        }
-
-      // Y-axis walls
-      diff = 2.0 * SPH_RADIUS - ( p_p->pos(1) - MIN(1) ) * SPH_SIMSCALE;
-      if ( diff > SPH_EPSILON )
-        {
-          norm << 0.0, 1.0, 0.0;
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * p_p->vel(1);
-          accel += adj * norm;
-        }
-      diff = 2.0 * SPH_RADIUS - ( MAX(1) - p_p->pos(1) ) * SPH_SIMSCALE;
-      if ( diff > SPH_EPSILON )
-        {
-          norm << 0.0, -1.0, 0.0;
-          adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * p_p->vel(1);
-          accel += adj * norm;
-        }
-      
-      accel += this->gravity;
-      p_p->vel += accel * DT;
-      p_p->pos += p_p->vel * DT / SPH_SIMSCALE;
+      norm << 0.0, 0.0, 1.0;
+      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(2);
+      accel += adj * norm;
     }
+  diff = 2.0 * SPH_RADIUS - ( MAX(2) - this->pos(2) ) * SPH_SIMSCALE;
+  if ( diff > SPH_EPSILON )
+    {
+      norm << 0.0, 0.0, -1.0;
+      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(2);
+      accel += adj * norm;
+    }
+  
+  // X-axis walls
+  diff = 2.0 * SPH_RADIUS - ( this->pos(0) - MIN(0) ) * SPH_SIMSCALE;
+  if ( diff > SPH_EPSILON )
+    {
+      norm << 1.0, 0.0, 0.0;
+      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(0);
+      accel += adj * norm;
+    }
+  diff = 2.0 * SPH_RADIUS - ( MAX(0) - this->pos(0) ) * SPH_SIMSCALE;
+  if ( diff > SPH_EPSILON )
+    {
+      norm << -1.0, 0.0, 0.0;
+      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(0);
+      accel += adj * norm;
+    }
+  
+  // Y-axis walls
+  diff = 2.0 * SPH_RADIUS - ( this->pos(1) - MIN(1) ) * SPH_SIMSCALE;
+  if ( diff > SPH_EPSILON )
+    {
+      norm << 0.0, 1.0, 0.0;
+      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(1);
+      accel += adj * norm;
+    }
+  diff = 2.0 * SPH_RADIUS - ( MAX(1) - this->pos(1) ) * SPH_SIMSCALE;
+  if ( diff > SPH_EPSILON )
+    {
+      norm << 0.0, -1.0, 0.0;
+      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(1);
+      accel += adj * norm;
+    }
+      
+  accel += space.gravity;
+  this->vel += accel * DT;
+  this->pos += this->vel * DT / SPH_SIMSCALE;
 }
 
