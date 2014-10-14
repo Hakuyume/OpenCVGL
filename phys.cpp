@@ -39,12 +39,6 @@ void Space::put_particles(void)
       }
 }
 
-#define FOR_EACH_PARTICLE( p_p, p_ps ) \
-  for( Particles::iterator (p_p) = (p_ps)->begin(); (p_p) != (p_ps)->end(); (p_p)++ )
-
-#define FOR_EACH_PARTICLE_PTR( p_ptr, p_ptrs ) \
-  for( ParticlePtrs::iterator p_ptr = (p_ptrs)->begin(); (p_ptr) != (p_ptrs)->end(); (p_ptr)++ )
-
 void Space::new_neighbor_map(void)
 {
   this->p_nbr_map = new NeighborMap();
@@ -74,27 +68,24 @@ ParticlePtrs Space::neighbor(Eigen::Vector3d r)
 {
   ParticlePtrs ptrs;
   double d = H / SPH_SIMSCALE;
+
   for ( int x=-1; x<2; x++ )
-  for ( int y=-1; y<2; y++ )
-  for ( int z=-1; z<2; z++ )
-    {
-      Eigen::Vector3d v(x, y, z);
-      v = r + v * d;
-	if ( MIN(0) <= v(0) && v(0) <= MAX(0) &&
-	     MIN(1) <= v(1) && v(1) <= MAX(1) &&
-	     MIN(2) <= v(2) && v(2) <= MAX(2) )
-        {
+    for ( int y=-1; y<2; y++ )
+      for ( int z=-1; z<2; z++ ){
+	Eigen::Vector3d v(x, y, z);
+	v = r + v * d;
+
+	if (
+	    MIN(0) <= v(0) && v(0) <= MAX(0) &&
+	    MIN(1) <= v(1) && v(1) <= MAX(1) &&
+	    MIN(2) <= v(2) && v(2) <= MAX(2)){
           NeighborMapIdx ix = neighbor_map_idx(v);
           NeighborMap::iterator x = this->p_nbr_map->find(ix);
-          if ( x != p_nbr_map->end() )
-            {
-              FOR_EACH_PARTICLE_PTR( p_ptr, &(x->second) )
-                {
-                  ptrs.push_back( *p_ptr );
-                }
-            }
+          if (x != p_nbr_map->end())
+	    for (auto& pt : x->second)
+	      ptrs.push_back(pt);
         }
-    }
+      }
   return ptrs;
 }
 
@@ -129,23 +120,20 @@ void Particle::calc_amount(Space& space)
   double H2, sum, r2, c;
   Eigen::Vector3d dr;
   ParticlePtrs ptrs;
-  Particle* p_pj;
   
   H2 = H*H;
   
   sum  = 0.0;
   ptrs = space.neighbor(this->pos);
-  FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
-    {
-      p_pj= *p_ptr;
-      dr = (this->pos - p_pj->pos) * SPH_SIMSCALE;
-      r2 = dr.norm() * dr.norm();
-      if ( H2 > r2 )
-	{
-	  c = H2 - r2;
-	  sum += c * c * c;
-	}
+
+  for (auto& pt : ptrs){
+    dr = (this->pos - pt->pos) * SPH_SIMSCALE;
+    r2 = dr.norm() * dr.norm();
+    if (H2 > r2){
+      c = H2 - r2;
+      sum += c * c * c;
     }
+  }
   this->rho = sum * SPH_PMASS * Poly6Kern;
   this->prs = ( this->rho - SPH_RESTDENSITY ) * SPH_INTSTIFF;
   this->rho = 1.0 / this->rho;
@@ -160,22 +148,20 @@ void Particle::calc_force(Space& space)
   
   force << 0.0, 0.0, 0.0;
   ptrs = space.neighbor(this->pos);
-  FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
-    {
-      p_pj = *p_ptr;
-      if ( this->pos == p_pj->pos ) continue;
-      dr = (this->pos - p_pj->pos) * SPH_SIMSCALE;
-      r  = dr.norm();
-      if ( H > r )
-	{
-	  c = H - r;
-	  pterm = -0.5 * c * SpikyKern * (this->prs + p_pj->prs) / r;
-	  vterm = LapKern * SPH_VISC;
-	  fcurr = pterm * dr + vterm * (p_pj->vel - this->vel);
-	  fcurr *= c * this->rho * p_pj->rho;
-	  force += fcurr;
-	}
+
+  for (auto& pt : ptrs){
+    if ( this->pos == pt->pos ) continue;
+    dr = (this->pos - pt->pos) * SPH_SIMSCALE;
+    r  = dr.norm();
+    if (H > r){
+	c = H - r;
+	pterm = -0.5 * c * SpikyKern * (this->prs + pt->prs) / r;
+	vterm = LapKern * SPH_VISC;
+	fcurr = pterm * dr + vterm * (pt->vel - this->vel);
+	fcurr *= c * this->rho * pt->rho;
+	force += fcurr;
     }
+  }
   this->f = force;
 }
 
