@@ -7,26 +7,16 @@
 
 double kernel(const Eigen::Vector3d& r, const double h)
 {
-  double q = r.norm() / h;
-  double k = 1.0 / (M_PI * h * h * h);
-
-  if (0 <= q && q <= 1)
-    return k * (1 - 1.5 * q + 0.75 * q * q);
-  else if (1 < q && q <= 2)
-    return k * (2 - q) * (2 - q) * (2 - q);
+  if (r.norm() < h)
+    return h / r.norm() - 1;
   else
     return 0;
 }
 
 Eigen::Vector3d kernel_grad(const Eigen::Vector3d& r, const double h)
 {
-  double q = r.norm() / h;
-  double k = 1.0 / (M_PI * h * h * h);
-
-  if (0 <= q && q <= 1)
-    return k * (- 1.5 / r.norm() + 1.5 / h) * r / h;
-  else if (1 < q && q <= 2)
-    return k * (- 12 / r.norm() + 12 / h - 2 * q / h) * r / h;
+  if (r.norm() < h)
+    return - h / (r.norm() * r.norm() * r.norm()) * r;
   else
     return Eigen::Vector3d::Zero();
 }
