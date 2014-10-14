@@ -1,4 +1,5 @@
 #include <GL/glut.h>
+#include <math.h>
 #include "phys.hpp"
 
 #define INTERVAL 0.01
@@ -8,7 +9,7 @@ bool left_button = false;
 double r = 50;
 double theta = 0;
 
-Space space;
+Particles* p_ps;
 
 void display(void)
 {
@@ -35,9 +36,11 @@ void display(void)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
-  for (auto& pt : space.particles){
+  glTranslated(-10, -10, 0);
+
+  for (auto& pt : *p_ps){
     glPushMatrix();
-    glTranslated(pt.p(0), pt.p(1), pt.p(2));
+    glTranslated(pt.pos.x, pt.pos.y, pt.pos.z);
     glutSolidSphere(0.5, 12, 12);
     glPopMatrix();
   }
@@ -90,8 +93,8 @@ void motion(int x, int y)
   if (left_button){
     theta += 0.01 * (x - x0);
 
-    space.gravity << sin(theta), cos(theta), 0;
-    space.gravity *= -GRAVITY;
+    //    space.gravity << sin(theta), cos(theta), 0;
+    //    space.gravity *= -GRAVITY;
   }
   x0 = x;
 
@@ -102,7 +105,7 @@ void timer(int value)
 {
   glutTimerFunc(INTERVAL * 1000, &timer, 0);
 
-  space.update_particles(INTERVAL);
+  simulation( p_ps );
 
   glutPostRedisplay();
 }
@@ -130,14 +133,7 @@ int main(int argc, char *argv[])
   glutPassiveMotionFunc(&motion);
   glutTimerFunc(0, &timer, 0);
 
-  space.gravity << 0, -GRAVITY, 0;
-
-  for (int i = 0; i < 1000; i++){
-    Eigen::Vector3d pos;
-    pos << rand(), rand(), rand();
-    pos = ((pos / RAND_MAX).array() - 0.5) * 10;
-    space.add_particle(pos);
-  }
+  p_ps = new_particles();
 
   glutPostRedisplay();
 

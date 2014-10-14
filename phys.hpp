@@ -1,31 +1,24 @@
 #pragma once
 
 #include <vector>
-#include <Eigen/Eigen>
 
-#define BOXSIZE 10
-
-class Space;
-class Particle;
-
-class Space
-{
-public:
-  Eigen::Vector3d gravity;
-  std::vector<Particle> particles;
-  void add_particle(const Eigen::Vector3d& pos);
-  void find_neighbor(std::vector<Particle*>& neighbor, const Eigen::Vector3d& pos, const double r);
-  void update_particles(const double dt);
+struct vec3 {
+  double x, y, z;
+  vec3() {
+    x=0; y=0; z=0;
+  }
+  vec3( const double _x, const double _y, const double _z ) {
+    x=_x; y=_y;z=_z;
+  }
 };
 
-class Particle
+struct Particle
 {
-private:
-  double rho;
-  std::vector<Particle*> neighbor;
-public:
-  Eigen::Vector3d p, v;
-  void update_density(Space& space);
-  void update_velocity(Space& space, const double dt);
-  void update_position(const double dt);
+  vec3 pos, vel, f;
+  double rho, prs;
 };
+
+typedef std::vector<Particle> Particles;
+
+void simulation( Particles* );
+Particles* new_particles(void);
