@@ -21,7 +21,7 @@ public:
 class Particle
 {
 private:
-  double r;
+  double rho;
   std::vector<Particle*> neighbor;
 public:
   Eigen::Vector3d p, v;

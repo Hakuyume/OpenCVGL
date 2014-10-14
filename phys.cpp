@@ -64,9 +64,9 @@ void Particle::update_density(Space& space)
 {
   space.find_neighbor(this->neighbor, this->p, 2 * KERNEL_SIZE);
 
-  this->r = 0;
+  this->rho = 0;
   for (auto& pt : this->neighbor)
-    this->r += kernel(pt->p - this->p, KERNEL_SIZE);
+    this->rho += kernel(pt->p - this->p, KERNEL_SIZE);
 }
 
 void Particle::update_velocity(Space& space, const double dt)
@@ -75,8 +75,8 @@ void Particle::update_velocity(Space& space, const double dt)
   Eigen::Vector3d f_p(0, 0, 0);
 
   for (auto& pt : this->neighbor){
-    f_v += 10 * (pt->v - this->v) / pt->r * kernel(pt->p - this->p, KERNEL_SIZE);
-    f_p -= 1 * (pt->r + this->r - 3) / pt->r * kernel_grad(pt->p - this->p, KERNEL_SIZE);
+    f_v += 10 * (pt->v - this->v) / pt->rho * kernel(pt->p - this->p, KERNEL_SIZE);
+    f_p -= 1 * (pt->rho + this->rho - 3) / pt->rho * kernel_grad(pt->p - this->p, KERNEL_SIZE);
   }
 
   Eigen::Vector3d f_e = space.gravity;
