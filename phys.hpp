@@ -19,9 +19,10 @@ typedef std::vector<Particle> Particles;
 class Space
 {
 private:
-  void calc_amount(NeighborMap* p_nbr_map);
-  void calc_force(NeighborMap* p_nbr_map);
-  void advance(NeighborMap* p_nbr_map);
+  NeighborMap* p_nbr_map;
+  void calc_amount(void);
+  void calc_force(void);
+  void advance(void);
 public:
   Particles particles;
   Eigen::Vector3d gravity;

@@ -129,14 +129,14 @@ NeighborMapIdx neighbor_map_idx( Eigen::Vector3d r )
 
 void Space::update_particles(const double dt)
 {
-  NeighborMap* p_nbr_map = new_neighbor_map(&(this->particles));
-  calc_amount(p_nbr_map);
-  calc_force(p_nbr_map);
-  advance(p_nbr_map);
-  delete_neighbor_map(p_nbr_map);
+  this->p_nbr_map = new_neighbor_map(&(this->particles));
+  calc_amount();
+  calc_force();
+  advance();
+  delete_neighbor_map(this->p_nbr_map);
 }
 
-void Space::calc_amount(NeighborMap* p_nbr_map)
+void Space::calc_amount(void)
 {
   double H2, sum, r2, c;
   Eigen::Vector3d dr;
@@ -148,7 +148,7 @@ void Space::calc_amount(NeighborMap* p_nbr_map)
   FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       sum  = 0.0;
-      ptrs = neighbor( p_nbr_map, p_p->pos );
+      ptrs = neighbor( this->p_nbr_map, p_p->pos );
       FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
         {
           p_pj= *p_ptr;
@@ -166,7 +166,7 @@ void Space::calc_amount(NeighborMap* p_nbr_map)
     }
 }
 
-void Space::calc_force(NeighborMap* p_nbr_map)
+void Space::calc_force(void)
 {
   double pterm, vterm, r, c;
   Eigen::Vector3d dr, force, fcurr;
@@ -176,7 +176,7 @@ void Space::calc_force(NeighborMap* p_nbr_map)
   FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       force << 0.0, 0.0, 0.0;
-      ptrs = neighbor( p_nbr_map, p_p->pos );
+      ptrs = neighbor( this->p_nbr_map, p_p->pos );
       FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
         {
           p_pj = *p_ptr;
@@ -197,7 +197,7 @@ void Space::calc_force(NeighborMap* p_nbr_map)
     }
 }
 
-void Space::advance(NeighborMap* p_nbr_map)
+void Space::advance(void)
 {
   Eigen::Vector3d accel, norm;
   double speed, diff, adj;
