@@ -1,14 +1,8 @@
 #include "phys.hpp"
 
-#include <list>
-#include <map>
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
-/*----------------------------
-  Constants
-----------------------------*/
 
 static const double SPH_RESTDENSITY = 600.0;
 static const double SPH_INTSTIFF    = 3.0;
@@ -26,55 +20,31 @@ static const double SPH_EXTDAMP     = 256.0;
 static const double SPH_PDIST       = pow(SPH_PMASS / SPH_RESTDENSITY,
                                           1.0/3.0 );
 static const Eigen::Vector3d   MIN(  0.0,  0.0, -10.0 );
-static const Eigen::Vector3d   MAX( 20.0, 50.0,  10.0 );
+static const Eigen::Vector3d   MAX( 20.0, 20.0,  10.0 );
 static const Eigen::Vector3d   INIT_MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   INIT_MAX( 10.0, 20.0,  10.0 );
 static const double Poly6Kern       = 315.0 / ( 64.0 * PI * pow( H, 9 ) );
 static const double SpikyKern       = -45.0 / ( PI * pow( H, 6 ) );
 static const double LapKern         = 45.0 / ( PI * pow( H, 6 ) );
 
-Particles* new_particles()
+void Space::put_particles(void)
 {
-  Particles* p_ps;
-  p_ps = new Particles();
-  
   double d = SPH_PDIST / SPH_SIMSCALE * 0.95;
   for ( double x = INIT_MIN(0)+d; x <= INIT_MAX(0)-d; x += d )
     for ( double y = INIT_MIN(1)+d; y <= INIT_MAX(1)-d; y += d )
-      for ( double z = INIT_MIN(2)+d; z <= INIT_MAX(2)-d; z += d )
-	{
-	  Particle p;
-	  p.pos << x, y, z;
-	  p.vel = Eigen::Vector3d::Zero();
-	  p.f = Eigen::Vector3d::Zero();
-	  p.rho  = 0.0;
-	  p.prs  = 0.0;
-	  p_ps->push_back( p );
-	}
-  return p_ps;
-}
-
-void delete_particles( Particles* p_ps )
-{
-  delete p_ps;
-}
-
-int particles_size( Particles* p_ps )
-{
-  return p_ps->size();
+      for ( double z = INIT_MIN(2)+d; z <= INIT_MAX(2)-d; z += d ){
+	Particle p;
+	p.pos << x, y, z;
+	p.vel = Eigen::Vector3d::Zero();
+	p.f = Eigen::Vector3d::Zero();
+	p.rho  = 0.0;
+	p.prs  = 0.0;
+	this->particles.push_back( p );
+      }
 }
 
 #define FOR_EACH_PARTICLE( p_p, p_ps ) \
   for( Particles::iterator (p_p) = (p_ps)->begin(); (p_p) != (p_ps)->end(); (p_p)++ )
-
-
-/*----------------------------
-  Declaration of NeighborMap
-----------------------------*/
-
-typedef long NeighborMapIdx;
-typedef std::list< Particle* > ParticlePtrs;
-typedef std::map< NeighborMapIdx, ParticlePtrs > NeighborMap;
 
 NeighborMap*   new_neighbor_map( Particles* p_ps );
 void           _insert_neighbor_map( Particle*, NeighborMap* );
@@ -157,26 +127,16 @@ NeighborMapIdx neighbor_map_idx( Eigen::Vector3d r )
   return x + y * mx + z * mx * my;
 }
 
-
-/*----------------------------
-  Functions for simulation
-----------------------------*/
-
-void calc_amount( Particles*, NeighborMap* );
-void calc_force( Particles*, NeighborMap* );
-void advance( Particles*, NeighborMap* );
-
-void simulation( Particles* p_ps )
+void Space::update_particles(const double dt)
 {
-  NeighborMap* p_nbr_map;
-  p_nbr_map = new_neighbor_map( p_ps );
-  calc_amount( p_ps, p_nbr_map );
-  calc_force( p_ps, p_nbr_map );
-  advance( p_ps, p_nbr_map );
-  delete_neighbor_map( p_nbr_map );
+  NeighborMap* p_nbr_map = new_neighbor_map(&(this->particles));
+  calc_amount(p_nbr_map);
+  calc_force(p_nbr_map);
+  advance(p_nbr_map);
+  delete_neighbor_map(p_nbr_map);
 }
 
-void calc_amount( Particles* p_ps, NeighborMap* p_nbr_map )
+void Space::calc_amount(NeighborMap* p_nbr_map)
 {
   double H2, sum, r2, c;
   Eigen::Vector3d dr;
@@ -185,7 +145,7 @@ void calc_amount( Particles* p_ps, NeighborMap* p_nbr_map )
   
   H2 = H*H;
   
-  FOR_EACH_PARTICLE( p_p, p_ps )
+  FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       sum  = 0.0;
       ptrs = neighbor( p_nbr_map, p_p->pos );
@@ -206,14 +166,14 @@ void calc_amount( Particles* p_ps, NeighborMap* p_nbr_map )
     }
 }
 
-void calc_force( Particles* p_ps, NeighborMap* p_nbr_map )
+void Space::calc_force(NeighborMap* p_nbr_map)
 {
   double pterm, vterm, r, c;
   Eigen::Vector3d dr, force, fcurr;
   ParticlePtrs ptrs;
   Particle* p_pj;
   
-  FOR_EACH_PARTICLE( p_p, p_ps )
+  FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       force << 0.0, 0.0, 0.0;
       ptrs = neighbor( p_nbr_map, p_p->pos );
@@ -237,12 +197,12 @@ void calc_force( Particles* p_ps, NeighborMap* p_nbr_map )
     }
 }
 
-void advance( Particles* p_ps, NeighborMap* p_nbr_map )
+void Space::advance(NeighborMap* p_nbr_map)
 {
   Eigen::Vector3d accel, norm;
   double speed, diff, adj;
 
-  FOR_EACH_PARTICLE( p_p, p_ps )
+  FOR_EACH_PARTICLE( p_p, &(this->particles) )
     {
       accel = p_p->f * SPH_PMASS;
       
@@ -299,7 +259,7 @@ void advance( Particles* p_ps, NeighborMap* p_nbr_map )
           accel += adj * norm;
         }
       
-      accel += g;
+      accel += this->gravity;
       p_p->vel += accel * DT;
       p_p->pos += p_p->vel * DT / SPH_SIMSCALE;
     }

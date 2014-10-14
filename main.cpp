@@ -2,15 +2,14 @@
 #include <math.h>
 #include "phys.hpp"
 
-#define INTERVAL 0.01
+#define INTERVAL 0.004
 #define GRAVITY 9.8
 
 bool left_button = false;
 double r = 50;
 double theta = 0;
 
-Particles* p_ps;
-Eigen::Vector3d g(0, -GRAVITY, 0);
+Space space;
 
 void display(void)
 {
@@ -39,7 +38,7 @@ void display(void)
 
   glTranslated(-10, -10, 0);
 
-  for (auto& pt : *p_ps){
+  for (auto& pt : space.particles){
     glPushMatrix();
     glTranslated(pt.pos(0), pt.pos(1), pt.pos(2));
     glutSolidSphere(0.5, 12, 12);
@@ -94,8 +93,8 @@ void motion(int x, int y)
   if (left_button){
     theta += 0.01 * (x - x0);
 
-    g << sin(theta), cos(theta), 0;
-    g *= -GRAVITY;
+    space.gravity << sin(theta), cos(theta), 0;
+    space.gravity *= -GRAVITY;
   }
   x0 = x;
 
@@ -106,7 +105,7 @@ void timer(int value)
 {
   glutTimerFunc(INTERVAL * 1000, &timer, 0);
 
-  simulation( p_ps );
+  space.update_particles(INTERVAL);
 
   glutPostRedisplay();
 }
@@ -134,7 +133,9 @@ int main(int argc, char *argv[])
   glutPassiveMotionFunc(&motion);
   glutTimerFunc(0, &timer, 0);
 
-  p_ps = new_particles();
+  space.put_particles();
+
+  space.gravity << 0, -GRAVITY, 0;
 
   glutPostRedisplay();
 
