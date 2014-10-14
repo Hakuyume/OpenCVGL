@@ -141,7 +141,6 @@ void Particle::calc_force(Space& space)
 {
   double pterm, vterm, r, c;
   Eigen::Vector3d dr, force, fcurr;
-  Particle* p_pj;
   
   force << 0.0, 0.0, 0.0;
 
