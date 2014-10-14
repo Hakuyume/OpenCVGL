@@ -126,7 +126,8 @@ NeighborMapIdx neighbor_map_idx( Eigen::Vector3d r )
 void Space::update_particles(const double dt)
 {
   this->p_nbr_map = new_neighbor_map(&(this->particles));
-  calc_amount();
+  for (auto& pt : this->particles)
+    pt.calc_amount(*this);
   for (auto& pt : this->particles)
     pt.calc_force(*this);
   for (auto& pt : this->particles)
@@ -134,7 +135,7 @@ void Space::update_particles(const double dt)
   delete_neighbor_map(this->p_nbr_map);
 }
 
-void Space::calc_amount(void)
+void Particle::calc_amount(Space& space)
 {
   double H2, sum, r2, c;
   Eigen::Vector3d dr;
@@ -143,25 +144,22 @@ void Space::calc_amount(void)
   
   H2 = H*H;
   
-  FOR_EACH_PARTICLE( p_p, &(this->particles) )
+  sum  = 0.0;
+  ptrs = space.neighbor(this->pos);
+  FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
     {
-      sum  = 0.0;
-      ptrs = this->neighbor(p_p->pos);
-      FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
-        {
-          p_pj= *p_ptr;
-          dr = (p_p->pos - p_pj->pos) * SPH_SIMSCALE;
-          r2 = dr.norm() * dr.norm();
-          if ( H2 > r2 )
-            {
-              c = H2 - r2;
-              sum += c * c * c;
-            }
-        }
-      p_p->rho = sum * SPH_PMASS * Poly6Kern;
-      p_p->prs = ( p_p->rho - SPH_RESTDENSITY ) * SPH_INTSTIFF;
-      p_p->rho = 1.0 / p_p->rho;
+      p_pj= *p_ptr;
+      dr = (this->pos - p_pj->pos) * SPH_SIMSCALE;
+      r2 = dr.norm() * dr.norm();
+      if ( H2 > r2 )
+	{
+	  c = H2 - r2;
+	  sum += c * c * c;
+	}
     }
+  this->rho = sum * SPH_PMASS * Poly6Kern;
+  this->prs = ( this->rho - SPH_RESTDENSITY ) * SPH_INTSTIFF;
+  this->rho = 1.0 / this->rho;
 }
 
 void Particle::calc_force(Space& space)

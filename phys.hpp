@@ -18,6 +18,7 @@ class Particle
 public:
   Eigen::Vector3d pos, vel, f;
   double rho, prs;
+  void calc_amount(Space& space);
   void calc_force(Space& space);
   void advance(Space& space);
 };
@@ -26,7 +27,6 @@ class Space
 {
 private:
   NeighborMap* p_nbr_map;
-  void calc_amount(void);
 public:
   Particles particles;
   Eigen::Vector3d gravity;
