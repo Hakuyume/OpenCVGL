@@ -40,7 +40,7 @@ void display(void)
 
   for (auto& pt : *p_ps){
     glPushMatrix();
-    glTranslated(pt.pos.x, pt.pos.y, pt.pos.z);
+    glTranslated(pt.pos(0), pt.pos(1), pt.pos(2));
     glutSolidSphere(0.5, 12, 12);
     glPopMatrix();
   }

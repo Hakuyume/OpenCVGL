@@ -6,82 +6,6 @@
 #include <fstream>
 #include <cmath>
 
-inline void operator+= ( vec3 &v, const vec3 a ){
-  v.x += a.x; v.y += a.y; v.z += a.z;
-}
-
-inline void operator*= ( vec3 &v, const double a ){
-  v.x *= a; v.y *= a; v.z *= a;
-}
-
-inline bool operator== ( const vec3 a, const vec3 b )
-{
-  return a.x==b.x && a.y==b.y && a.z==b.z;
-}
-
-inline vec3 operator- ( const vec3 a )
-{
-  return vec3( -a.x, -a.y, -a.z);
-}
-
-inline vec3 operator+ ( const vec3 a, const vec3 b )
-{
-  vec3 v;
-  v.x = a.x + b.x;
-  v.y = a.y + b.y;
-  v.z = a.z + b.z;
-  return v;
-}
-
-inline vec3 operator- ( const vec3 a, const vec3 b )
-{
-  vec3 v;
-  v.x = a.x - b.x;
-  v.y = a.y - b.y;
-  v.z = a.z - b.z;
-  return v;
-}
-
-inline vec3 operator* ( const double a, const vec3 b )
-{
-  vec3 v;
-  v.x = a * b.x;
-  v.y = a * b.y;
-  v.z = a * b.z;
-  return v;
-}
-
-inline vec3 operator* ( const vec3 a, const double b )
-{
-  return b * a;
-}
-
-inline vec3 operator/ ( const vec3 a, const double b )
-{
-  if ( b != 0 )
-    return a * ( 1 / b );
-  else
-    {
-      std::cout << "error: division by 0." << std::endl;
-      exit(1);
-    }
-}
-
-inline double dot ( const vec3 a, const vec3 b )
-{
-  return a.x*b.x + a.y*b.y + a.z*b.z;
-}
-
-inline double mag2 ( const vec3 a )
-{
-  return a.x*a.x+a.y*a.y+a.z*a.z;
-}
-
-inline double mag ( const vec3 a )
-{
-  return sqrt(mag2(a));
-}
-
 /*----------------------------
   Constants
 ----------------------------*/
@@ -101,10 +25,10 @@ static const double SPH_EXTSTIFF    = 10000.0;
 static const double SPH_EXTDAMP     = 256.0;
 static const double SPH_PDIST       = pow(SPH_PMASS / SPH_RESTDENSITY,
                                           1.0/3.0 );
-static const vec3   MIN             = vec3(  0.0,  0.0, -10.0 );
-static const vec3   MAX             = vec3( 20.0, 50.0,  10.0 );
-static const vec3   INIT_MIN        = vec3(  0.0,  0.0, -10.0 );
-static const vec3   INIT_MAX        = vec3( 10.0, 20.0,  10.0 );
+static const Eigen::Vector3d   MIN(  0.0,  0.0, -10.0 );
+static const Eigen::Vector3d   MAX( 20.0, 50.0,  10.0 );
+static const Eigen::Vector3d   INIT_MIN(  0.0,  0.0, -10.0 );
+static const Eigen::Vector3d   INIT_MAX( 10.0, 20.0,  10.0 );
 static const double Poly6Kern       = 315.0 / ( 64.0 * PI * pow( H, 9 ) );
 static const double SpikyKern       = -45.0 / ( PI * pow( H, 6 ) );
 static const double LapKern         = 45.0 / ( PI * pow( H, 6 ) );
@@ -115,18 +39,18 @@ Particles* new_particles()
   p_ps = new Particles();
   
   double d = SPH_PDIST / SPH_SIMSCALE * 0.95;
-  for ( double x = INIT_MIN.x+d; x <= INIT_MAX.x-d; x += d )
-  for ( double y = INIT_MIN.y+d; y <= INIT_MAX.y-d; y += d )
-  for ( double z = INIT_MIN.z+d; z <= INIT_MAX.z-d; z += d )
-    {
-      Particle p;
-      p.pos.x = x; p.pos.y = y; p.pos.z = z;
-      p.vel.x = 0.0; p.vel.y = 0.0; p.vel.z = 0.0;
-      p.f.x = 0.0; p.f.y = 0.0; p.f.z = 0.0;
-      p.rho  = 0.0;
-      p.prs  = 0.0;
-      p_ps->push_back( p );
-    }
+  for ( double x = INIT_MIN(0)+d; x <= INIT_MAX(0)-d; x += d )
+    for ( double y = INIT_MIN(1)+d; y <= INIT_MAX(1)-d; y += d )
+      for ( double z = INIT_MIN(2)+d; z <= INIT_MAX(2)-d; z += d )
+	{
+	  Particle p;
+	  p.pos << x, y, z;
+	  p.vel = Eigen::Vector3d::Zero();
+	  p.f = Eigen::Vector3d::Zero();
+	  p.rho  = 0.0;
+	  p.prs  = 0.0;
+	  p_ps->push_back( p );
+	}
   return p_ps;
 }
 
@@ -155,8 +79,8 @@ typedef std::map< NeighborMapIdx, ParticlePtrs > NeighborMap;
 NeighborMap*   new_neighbor_map( Particles* p_ps );
 void           _insert_neighbor_map( Particle*, NeighborMap* );
 void           delete_neighbor_map( NeighborMap* );
-ParticlePtrs   neighbor( NeighborMap*, vec3 );
-NeighborMapIdx neighbor_map_idx( vec3 );
+ParticlePtrs   neighbor( NeighborMap*, Eigen::Vector3d );
+NeighborMapIdx neighbor_map_idx( Eigen::Vector3d );
 
 #define FOR_EACH_PARTICLE_PTR( p_ptr, p_ptrs ) \
   for( ParticlePtrs::iterator p_ptr = (p_ptrs)->begin(); (p_ptr) != (p_ptrs)->end(); (p_ptr)++ )
@@ -191,7 +115,7 @@ void delete_neighbor_map( NeighborMap* p_nbr_map )
   delete p_nbr_map;
 }
 
-ParticlePtrs neighbor( NeighborMap* p_nbr_map, vec3 r )
+ParticlePtrs neighbor( NeighborMap* p_nbr_map, Eigen::Vector3d r )
 {
   ParticlePtrs ptrs;
   double d = H / SPH_SIMSCALE;
@@ -199,10 +123,11 @@ ParticlePtrs neighbor( NeighborMap* p_nbr_map, vec3 r )
   for ( int y=-1; y<2; y++ )
   for ( int z=-1; z<2; z++ )
     {
-      vec3 v( r.x+(double)x*d, r.y+(double)y*d, r.z+(double)z*d );
-      if ( MIN.x <= v.x && v.x <= MAX.x &&
-           MIN.y <= v.y && v.y <= MAX.y &&
-           MIN.z <= v.z && v.z <= MAX.z )
+      Eigen::Vector3d v(x, y, z);
+      v = r + v * d;
+	if ( MIN(0) <= v(0) && v(0) <= MAX(0) &&
+	     MIN(1) <= v(1) && v(1) <= MAX(1) &&
+	     MIN(2) <= v(2) && v(2) <= MAX(2) )
         {
           NeighborMapIdx ix = neighbor_map_idx( v );
           NeighborMap::iterator x = p_nbr_map->find(ix);
@@ -218,17 +143,17 @@ ParticlePtrs neighbor( NeighborMap* p_nbr_map, vec3 r )
   return ptrs;
 }
 
-NeighborMapIdx neighbor_map_idx( vec3 r )
+NeighborMapIdx neighbor_map_idx( Eigen::Vector3d r )
 {
   int x, y, z;
   int mx, my;
   double d;
   d  = H / SPH_SIMSCALE;
-  x  = floor( (r.x - MIN.x) / d );
-  y  = floor( (r.y - MIN.y) / d );
-  z  = floor( (r.z - MIN.z) / d );
-  mx = floor( (MAX.x - MIN.x) / d );
-  my = floor( (MAX.y - MIN.y) / d );
+  x  = floor( (r(0) - MIN(0)) / d );
+  y  = floor( (r(1) - MIN(1)) / d );
+  z  = floor( (r(2) - MIN(2)) / d );
+  mx = floor( (MAX(0) - MIN(0)) / d );
+  my = floor( (MAX(1) - MIN(1)) / d );
   return x + y * mx + z * mx * my;
 }
 
@@ -254,7 +179,7 @@ void simulation( Particles* p_ps )
 void calc_amount( Particles* p_ps, NeighborMap* p_nbr_map )
 {
   double H2, sum, r2, c;
-  vec3 dr;
+  Eigen::Vector3d dr;
   ParticlePtrs ptrs;
   Particle* p_pj;
   
@@ -268,7 +193,7 @@ void calc_amount( Particles* p_ps, NeighborMap* p_nbr_map )
         {
           p_pj= *p_ptr;
           dr = (p_p->pos - p_pj->pos) * SPH_SIMSCALE;
-          r2 = mag2( dr );
+          r2 = dr.norm() * dr.norm();
           if ( H2 > r2 )
             {
               c = H2 - r2;
@@ -284,20 +209,20 @@ void calc_amount( Particles* p_ps, NeighborMap* p_nbr_map )
 void calc_force( Particles* p_ps, NeighborMap* p_nbr_map )
 {
   double pterm, vterm, r, c;
-  vec3 dr, force, fcurr;
+  Eigen::Vector3d dr, force, fcurr;
   ParticlePtrs ptrs;
   Particle* p_pj;
   
   FOR_EACH_PARTICLE( p_p, p_ps )
     {
-      force = vec3( 0.0, 0.0, 0.0 );
+      force << 0.0, 0.0, 0.0;
       ptrs = neighbor( p_nbr_map, p_p->pos );
       FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
         {
           p_pj = *p_ptr;
           if ( p_p->pos == p_pj->pos ) continue;
           dr = (p_p->pos - p_pj->pos) * SPH_SIMSCALE;
-          r  = mag( dr );
+          r  = dr.norm();
           if ( H > r )
             {
               c = H - r;
@@ -314,64 +239,64 @@ void calc_force( Particles* p_ps, NeighborMap* p_nbr_map )
 
 void advance( Particles* p_ps, NeighborMap* p_nbr_map )
 {
-  vec3 accel, g, norm;
+  Eigen::Vector3d accel, g, norm;
   double speed, diff, adj;
   
-  g = vec3( 0.0, -9.8, 0.0 );
+  g << 0.0, -9.8, 0.0;
   FOR_EACH_PARTICLE( p_p, p_ps )
     {
       accel = p_p->f * SPH_PMASS;
       
-      speed = mag2( accel );
+      speed = accel.norm() * accel.norm();
       if ( speed > SPH_LIMIT*SPH_LIMIT ) {
         accel *= SPH_LIMIT / sqrt(speed);
       }
       
       // Z-axis walls
-      diff = 2.0 * SPH_RADIUS - ( p_p->pos.z - MIN.z ) * SPH_SIMSCALE;
+      diff = 2.0 * SPH_RADIUS - ( p_p->pos(2) - MIN(2) ) * SPH_SIMSCALE;
       if ( diff > SPH_EPSILON )
         {
-          norm = vec3( 0.0, 0.0, 1.0 );
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * dot( norm, p_p->vel );
+          norm << 0.0, 0.0, 1.0;
+          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * p_p->vel(2);
           accel += adj * norm;
         }
-      diff = 2.0 * SPH_RADIUS - ( MAX.z - p_p->pos.z ) * SPH_SIMSCALE;
+      diff = 2.0 * SPH_RADIUS - ( MAX(2) - p_p->pos(2) ) * SPH_SIMSCALE;
       if ( diff > SPH_EPSILON )
         {
-          norm = vec3( 0.0, 0.0, -1.0 );
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * dot( norm, p_p->vel );
+          norm << 0.0, 0.0, -1.0;
+          adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * p_p->vel(2);
           accel += adj * norm;
         }
      
       // X-axis walls
-      diff = 2.0 * SPH_RADIUS - ( p_p->pos.x - MIN.x ) * SPH_SIMSCALE;
+      diff = 2.0 * SPH_RADIUS - ( p_p->pos(0) - MIN(0) ) * SPH_SIMSCALE;
       if ( diff > SPH_EPSILON )
         {
-          norm = vec3( 1.0, 0.0, 0.0 );
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * dot( norm, p_p->vel );
+          norm << 1.0, 0.0, 0.0;
+          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * p_p->vel(0);
           accel += adj * norm;
         }
-      diff = 2.0 * SPH_RADIUS - ( MAX.x - p_p->pos.x ) * SPH_SIMSCALE;
+      diff = 2.0 * SPH_RADIUS - ( MAX(0) - p_p->pos(0) ) * SPH_SIMSCALE;
       if ( diff > SPH_EPSILON )
         {
-          norm = vec3( -1.0, 0.0, 0.0 );
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * dot( norm, p_p->vel );
+          norm << -1.0, 0.0, 0.0;
+          adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * p_p->vel(0);
           accel += adj * norm;
         }
 
       // Y-axis walls
-      diff = 2.0 * SPH_RADIUS - ( p_p->pos.y - MIN.y ) * SPH_SIMSCALE;
+      diff = 2.0 * SPH_RADIUS - ( p_p->pos(1) - MIN(1) ) * SPH_SIMSCALE;
       if ( diff > SPH_EPSILON )
         {
-          norm = vec3( 0.0, 1.0, 0.0 );
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * dot( norm, p_p->vel );
+          norm << 0.0, 1.0, 0.0;
+          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * p_p->vel(1);
           accel += adj * norm;
         }
-      diff = 2.0 * SPH_RADIUS - ( MAX.y - p_p->pos.y ) * SPH_SIMSCALE;
+      diff = 2.0 * SPH_RADIUS - ( MAX(1) - p_p->pos(1) ) * SPH_SIMSCALE;
       if ( diff > SPH_EPSILON )
         {
-          norm = vec3( 0.0, -1.0, 0.0 );
-          adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * dot( norm, p_p->vel );
+          norm << 0.0, -1.0, 0.0;
+          adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * p_p->vel(1);
           accel += adj * norm;
         }
       
