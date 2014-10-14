@@ -1,5 +1,5 @@
 #include <GL/glut.h>
-#include <math.h>
+#include <cmath>
 #include "phys.hpp"
 
 #define INTERVAL 0.004

@@ -1,7 +1,4 @@
 #include "phys.hpp"
-
-#include <iostream>
-#include <fstream>
 #include <cmath>
 
 static const double SPH_RESTDENSITY = 600.0;
@@ -9,7 +6,6 @@ static const double SPH_INTSTIFF    = 3.0;
 static const double SPH_PMASS       = 0.00020543;
 static const double SPH_SIMSCALE    = 0.004;
 static const double H               = 0.01;
-static const double PI              = 3.141592653589793;
 static const double DT              = 0.004;
 static const double SPH_VISC        = 0.2;
 static const double SPH_LIMIT       = 200.0;
@@ -23,9 +19,9 @@ static const Eigen::Vector3d   MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   MAX( 20.0, 20.0,  10.0 );
 static const Eigen::Vector3d   INIT_MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   INIT_MAX( 10.0, 20.0,  10.0 );
-static const double Poly6Kern       = 315.0 / ( 64.0 * PI * pow( H, 9 ) );
-static const double SpikyKern       = -45.0 / ( PI * pow( H, 6 ) );
-static const double LapKern         = 45.0 / ( PI * pow( H, 6 ) );
+static const double Poly6Kern       = 315.0 / ( 64.0 * M_PI * pow( H, 9 ) );
+static const double SpikyKern       = -45.0 / ( M_PI * pow( H, 6 ) );
+static const double LapKern         = 45.0 / ( M_PI * pow( H, 6 ) );
 
 void Space::put_particles(void)
 {
