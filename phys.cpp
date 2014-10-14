@@ -127,7 +127,8 @@ void Space::update_particles(const double dt)
 {
   this->p_nbr_map = new_neighbor_map(&(this->particles));
   calc_amount();
-  calc_force();
+  for (auto& pt : this->particles)
+    pt.calc_force(*this);
   for (auto& pt : this->particles)
     pt.advance(*this);
   delete_neighbor_map(this->p_nbr_map);
@@ -163,38 +164,35 @@ void Space::calc_amount(void)
     }
 }
 
-void Space::calc_force(void)
+void Particle::calc_force(Space& space)
 {
   double pterm, vterm, r, c;
   Eigen::Vector3d dr, force, fcurr;
   ParticlePtrs ptrs;
   Particle* p_pj;
   
-  FOR_EACH_PARTICLE( p_p, &(this->particles) )
+  force << 0.0, 0.0, 0.0;
+  ptrs = space.neighbor(this->pos);
+  FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
     {
-      force << 0.0, 0.0, 0.0;
-      ptrs = this->neighbor(p_p->pos);
-      FOR_EACH_PARTICLE_PTR( p_ptr, &ptrs )
-        {
-          p_pj = *p_ptr;
-          if ( p_p->pos == p_pj->pos ) continue;
-          dr = (p_p->pos - p_pj->pos) * SPH_SIMSCALE;
-          r  = dr.norm();
-          if ( H > r )
-            {
-              c = H - r;
-              pterm = -0.5 * c * SpikyKern * (p_p->prs + p_pj->prs) / r;
-              vterm = LapKern * SPH_VISC;
-              fcurr = pterm * dr + vterm * (p_pj->vel - p_p->vel);
-              fcurr *= c * p_p->rho * p_pj->rho;
-              force += fcurr;
-            }
-        }
-      p_p->f = force;
+      p_pj = *p_ptr;
+      if ( this->pos == p_pj->pos ) continue;
+      dr = (this->pos - p_pj->pos) * SPH_SIMSCALE;
+      r  = dr.norm();
+      if ( H > r )
+	{
+	  c = H - r;
+	  pterm = -0.5 * c * SpikyKern * (this->prs + p_pj->prs) / r;
+	  vterm = LapKern * SPH_VISC;
+	  fcurr = pterm * dr + vterm * (p_pj->vel - this->vel);
+	  fcurr *= c * this->rho * p_pj->rho;
+	  force += fcurr;
+	}
     }
+  this->f = force;
 }
 
-void Particle::advance(const Space& space)
+void Particle::advance(Space& space)
 {
   Eigen::Vector3d accel, norm;
   double speed, diff, adj;
