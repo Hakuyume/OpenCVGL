@@ -8,9 +8,6 @@
 class Particle;
 class Space;
 
-typedef std::list< Particle* > ParticlePtrs;
-typedef std::vector<Particle> Particles;
-
 class Particle
 {
 public:
@@ -25,16 +22,16 @@ class Space
 {
 private:
   typedef long NeighborMapIdx;
-  typedef std::map< NeighborMapIdx, ParticlePtrs > NeighborMap;
+  typedef std::map<NeighborMapIdx, std::list<Particle*> > NeighborMap;
   NeighborMap* p_nbr_map;
   void new_neighbor_map(void);
   void insert_neighbor_map(Particle*);
   void delete_neighbor_map(void);
   NeighborMapIdx neighbor_map_idx(Eigen::Vector3d);
 public:
-  Particles particles;
+  std::vector<Particle> particles;
   Eigen::Vector3d gravity;
   void put_particles(void);
   void update_particles(const double dt);
-  ParticlePtrs neighbor(Eigen::Vector3d r);
+  std::list<Particle*> neighbor(Eigen::Vector3d r);
 };

@@ -53,7 +53,7 @@ void Space::insert_neighbor_map(Particle* pt)
   if (iter != p_nbr_map->end())
     iter->second.push_back(pt);
   else{
-    ParticlePtrs ptrs;
+    std::list<Particle*> ptrs;
     ptrs.push_back(pt);
     this->p_nbr_map->insert(NeighborMap::value_type(ix, ptrs));
   }
@@ -64,9 +64,9 @@ void Space::delete_neighbor_map(void)
   delete this->p_nbr_map;
 }
 
-ParticlePtrs Space::neighbor(Eigen::Vector3d r)
+std::list<Particle*> Space::neighbor(Eigen::Vector3d r)
 {
-  ParticlePtrs ptrs;
+  std::list<Particle*> ptrs;
   double d = H / SPH_SIMSCALE;
 
   for ( int x=-1; x<2; x++ )
@@ -119,14 +119,12 @@ void Particle::calc_amount(Space& space)
 {
   double H2, sum, r2, c;
   Eigen::Vector3d dr;
-  ParticlePtrs ptrs;
   
   H2 = H*H;
   
   sum  = 0.0;
-  ptrs = space.neighbor(this->pos);
 
-  for (auto& pt : ptrs){
+  for (auto& pt : space.neighbor(this->pos)){
     dr = (this->pos - pt->pos) * SPH_SIMSCALE;
     r2 = dr.norm() * dr.norm();
     if (H2 > r2){
@@ -143,13 +141,11 @@ void Particle::calc_force(Space& space)
 {
   double pterm, vterm, r, c;
   Eigen::Vector3d dr, force, fcurr;
-  ParticlePtrs ptrs;
   Particle* p_pj;
   
   force << 0.0, 0.0, 0.0;
-  ptrs = space.neighbor(this->pos);
 
-  for (auto& pt : ptrs){
+  for (auto& pt : space.neighbor(this->pos)){
     if ( this->pos == pt->pos ) continue;
     dr = (this->pos - pt->pos) * SPH_SIMSCALE;
     r  = dr.norm();
