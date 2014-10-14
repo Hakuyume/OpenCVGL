@@ -89,7 +89,7 @@ ParticlePtrs Space::neighbor(Eigen::Vector3d r)
   return ptrs;
 }
 
-NeighborMapIdx Space::neighbor_map_idx(Eigen::Vector3d r)
+Space::NeighborMapIdx Space::neighbor_map_idx(Eigen::Vector3d r)
 {
   int x, y, z;
   int mx, my;

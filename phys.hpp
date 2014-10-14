@@ -8,9 +8,7 @@
 class Particle;
 class Space;
 
-typedef long NeighborMapIdx;
 typedef std::list< Particle* > ParticlePtrs;
-typedef std::map< NeighborMapIdx, ParticlePtrs > NeighborMap;
 typedef std::vector<Particle> Particles;
 
 class Particle
@@ -26,6 +24,8 @@ public:
 class Space
 {
 private:
+  typedef long NeighborMapIdx;
+  typedef std::map< NeighborMapIdx, ParticlePtrs > NeighborMap;
   NeighborMap* p_nbr_map;
   void new_neighbor_map(void);
   void insert_neighbor_map(Particle*);
