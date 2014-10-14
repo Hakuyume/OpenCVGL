@@ -1,4 +1,4 @@
-CXX_FLAGS=-O3 -std=c++11
+CXX_FLAGS=-Wall -O3 -std=c++11
 
 GL_FLAGS=`pkg-config gl glu --cflags`
 GL_LIBS=`pkg-config gl glu --libs` -lglut
