@@ -42,43 +42,32 @@ void Space::put_particles(void)
 #define FOR_EACH_PARTICLE( p_p, p_ps ) \
   for( Particles::iterator (p_p) = (p_ps)->begin(); (p_p) != (p_ps)->end(); (p_p)++ )
 
-NeighborMap*   new_neighbor_map( Particles* p_ps );
-void           _insert_neighbor_map( Particle*, NeighborMap* );
-void           delete_neighbor_map( NeighborMap* );
-ParticlePtrs   neighbor( NeighborMap*, Eigen::Vector3d );
-NeighborMapIdx neighbor_map_idx( Eigen::Vector3d );
-
 #define FOR_EACH_PARTICLE_PTR( p_ptr, p_ptrs ) \
   for( ParticlePtrs::iterator p_ptr = (p_ptrs)->begin(); (p_ptr) != (p_ptrs)->end(); (p_ptr)++ )
 
-NeighborMap* new_neighbor_map( Particles* p_ps )
+void Space::new_neighbor_map(void)
 {
-  NeighborMap* p_nbr_map;
-  p_nbr_map = new NeighborMap();
-  FOR_EACH_PARTICLE( p_p, p_ps )
-    _insert_neighbor_map( &*p_p, p_nbr_map );
-  return p_nbr_map;
+  this->p_nbr_map = new NeighborMap();
+  for (auto& pt : this->particles)
+    this->insert_neighbor_map(&pt);
 }
 
-void _insert_neighbor_map( Particle* p_p, NeighborMap* p_nbr_map )
+void Space::insert_neighbor_map(Particle* pt)
 {
-  NeighborMapIdx ix = neighbor_map_idx( p_p->pos );
-  NeighborMap::iterator iter = p_nbr_map->find( ix );
-  if ( iter != p_nbr_map->end() )
-    {
-      iter->second.push_back( p_p );
-    }
-  else
-    {
-      ParticlePtrs ptrs;
-      ptrs.push_back( p_p );
-      p_nbr_map->insert( NeighborMap::value_type( ix, ptrs ) );
-    }
+  NeighborMapIdx ix = neighbor_map_idx(pt->pos);
+  NeighborMap::iterator iter = this->p_nbr_map->find(ix);
+  if (iter != p_nbr_map->end())
+    iter->second.push_back(pt);
+  else{
+    ParticlePtrs ptrs;
+    ptrs.push_back(pt);
+    this->p_nbr_map->insert(NeighborMap::value_type(ix, ptrs));
+  }
 }
 
-void delete_neighbor_map( NeighborMap* p_nbr_map )
+void Space::delete_neighbor_map(void)
 {
-  delete p_nbr_map;
+  delete this->p_nbr_map;
 }
 
 ParticlePtrs Space::neighbor(Eigen::Vector3d r)
@@ -95,7 +84,7 @@ ParticlePtrs Space::neighbor(Eigen::Vector3d r)
 	     MIN(1) <= v(1) && v(1) <= MAX(1) &&
 	     MIN(2) <= v(2) && v(2) <= MAX(2) )
         {
-          NeighborMapIdx ix = neighbor_map_idx( v );
+          NeighborMapIdx ix = neighbor_map_idx(v);
           NeighborMap::iterator x = this->p_nbr_map->find(ix);
           if ( x != p_nbr_map->end() )
             {
@@ -109,7 +98,7 @@ ParticlePtrs Space::neighbor(Eigen::Vector3d r)
   return ptrs;
 }
 
-NeighborMapIdx neighbor_map_idx( Eigen::Vector3d r )
+NeighborMapIdx Space::neighbor_map_idx(Eigen::Vector3d r)
 {
   int x, y, z;
   int mx, my;
@@ -125,14 +114,14 @@ NeighborMapIdx neighbor_map_idx( Eigen::Vector3d r )
 
 void Space::update_particles(const double dt)
 {
-  this->p_nbr_map = new_neighbor_map(&(this->particles));
+  this->new_neighbor_map();
   for (auto& pt : this->particles)
     pt.calc_amount(*this);
   for (auto& pt : this->particles)
     pt.calc_force(*this);
   for (auto& pt : this->particles)
     pt.advance(*this);
-  delete_neighbor_map(this->p_nbr_map);
+  this->delete_neighbor_map();
 }
 
 void Particle::calc_amount(Space& space)

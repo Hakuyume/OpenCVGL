@@ -27,6 +27,10 @@ class Space
 {
 private:
   NeighborMap* p_nbr_map;
+  void new_neighbor_map(void);
+  void insert_neighbor_map(Particle*);
+  void delete_neighbor_map(void);
+  NeighborMapIdx neighbor_map_idx(Eigen::Vector3d);
 public:
   Particles particles;
   Eigen::Vector3d gravity;
