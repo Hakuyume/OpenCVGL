@@ -10,6 +10,8 @@ class Space;
 
 class Particle
 {
+private:
+  double poly6kern(const Eigen::Vector3d& r);
 public:
   Eigen::Vector3d pos, vel, f;
   double rho, prs;

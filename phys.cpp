@@ -19,7 +19,6 @@ static const Eigen::Vector3d   MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   MAX( 20.0, 20.0,  10.0 );
 static const Eigen::Vector3d   INIT_MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   INIT_MAX( 10.0, 20.0,  10.0 );
-static const double Poly6Kern       = 315.0 / ( 64.0 * M_PI * pow( H, 9 ) );
 static const double SpikyKern       = -45.0 / ( M_PI * pow( H, 6 ) );
 static const double LapKern         = 45.0 / ( M_PI * pow( H, 6 ) );
 
@@ -115,25 +114,25 @@ void Space::update_particles(const double dt)
   this->delete_neighbor_map();
 }
 
+double Particle::poly6kern(const Eigen::Vector3d& r)
+{
+  static const double k = 315.0 / (64.0 * M_PI * pow(H, 9));
+
+  double c = H * H - r.norm() * r.norm() * SPH_SIMSCALE * SPH_SIMSCALE;
+
+  if (c > 0)
+    return k * c * c * c;
+  else
+    return 0;
+}
+
 void Particle::calc_amount(Space& space)
 {
-  double H2, sum, r2, c;
-  Eigen::Vector3d dr;
-  
-  H2 = H*H;
-  
-  sum  = 0.0;
+  this->rho  = 0.0;
+  for (auto& pt : space.neighbor(this->pos))
+    this->rho += SPH_PMASS * poly6kern(pt->pos - this->pos);
 
-  for (auto& pt : space.neighbor(this->pos)){
-    dr = (this->pos - pt->pos) * SPH_SIMSCALE;
-    r2 = dr.norm() * dr.norm();
-    if (H2 > r2){
-      c = H2 - r2;
-      sum += c * c * c;
-    }
-  }
-  this->rho = sum * SPH_PMASS * Poly6Kern;
-  this->prs = ( this->rho - SPH_RESTDENSITY ) * SPH_INTSTIFF;
+  this->prs = (this->rho - SPH_RESTDENSITY) * SPH_INTSTIFF;
   this->rho = 1.0 / this->rho;
 }
 
