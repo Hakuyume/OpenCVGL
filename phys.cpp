@@ -89,7 +89,7 @@ void Space::update_particles(const double dt)
   for (auto& pt : particles)
     pt.calc_force(*this);
   for (auto& pt : particles)
-    pt.advance(*this);
+    pt.move(*this);
 }
 
 Particle::Particle(void)
@@ -168,7 +168,7 @@ void Particle::calc_force(Space& space)
   accel += space.gravity;
 }
 
-void Particle::advance(Space& space)
+void Particle::move(Space& space)
 {
   vel += accel * DT;
   pos += vel * DT / SPH_SIMSCALE;
