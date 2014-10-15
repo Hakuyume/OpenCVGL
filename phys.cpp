@@ -165,12 +165,11 @@ void Particle::advance(Space& space)
   double speed, diff, adj;
   
   accel = this->f * SPH_PMASS;
-  
+
   speed = accel.norm() * accel.norm();
-  if ( speed > SPH_LIMIT*SPH_LIMIT ) {
-    accel *= SPH_LIMIT / sqrt(speed);
-  }
-  
+  if (accel.norm() > SPH_LIMIT)
+    accel *= SPH_LIMIT / accel.norm();
+
   // Z-axis walls
   diff = 2.0 * SPH_RADIUS - ( this->pos(2) - MIN(2) ) * SPH_SIMSCALE;
   if ( diff > SPH_EPSILON )
