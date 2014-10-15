@@ -30,11 +30,7 @@ void Space::put_particles(void)
       for ( double z = INIT_MIN(2)+d; z <= INIT_MAX(2)-d; z += d ){
 	Particle p;
 	p.pos << x, y, z;
-	p.vel = Eigen::Vector3d::Zero();
-	p.f = Eigen::Vector3d::Zero();
-	p.rho  = 0.0;
-	p.prs  = 0.0;
-	this->particles.push_back( p );
+	this->particles.push_back(p);
       }
 }
 
@@ -112,6 +108,11 @@ void Space::update_particles(const double dt)
   for (auto& pt : this->particles)
     pt.advance(*this);
   this->delete_neighbor_map();
+}
+
+Particle::Particle(void)
+{
+  this->vel = Eigen::Vector3d::Zero();
 }
 
 double Particle::poly6kern(const Eigen::Vector3d& r)
