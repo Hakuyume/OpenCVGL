@@ -25,7 +25,7 @@ public:
   Particle(void);
   void calc_amount(Space& space);
   void calc_force(Space& space);
-  void move(Space& space);
+  void move(const double dt);
 };
 
 class Space

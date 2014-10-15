@@ -6,7 +6,6 @@ static const double SPH_INTSTIFF    = 3.0;
 static const double SPH_PMASS       = 0.00020543;
 static const double SPH_SIMSCALE    = 0.004;
 static const double H               = 0.01;
-static const double DT              = 0.004;
 static const double SPH_VISC        = 0.2;
 static const double SPH_LIMIT       = 200.0;
 static const double SPH_RADIUS      = 0.004;
@@ -89,7 +88,7 @@ void Space::update_particles(const double dt)
   for (auto& pt : particles)
     pt.calc_force(*this);
   for (auto& pt : particles)
-    pt.move(*this);
+    pt.move(dt);
 }
 
 Particle::Particle(void)
@@ -168,9 +167,9 @@ void Particle::calc_force(Space& space)
   accel += space.gravity;
 }
 
-void Particle::move(Space& space)
+void Particle::move(const double dt)
 {
-  vel += accel * DT;
-  pos += vel * DT / SPH_SIMSCALE;
+  vel += accel * dt;
+  pos += vel * dt / SPH_SIMSCALE;
 }
 
