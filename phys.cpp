@@ -129,7 +129,7 @@ double Particle::poly6kern(const Eigen::Vector3d& r)
 
 void Particle::calc_amount(Space& space)
 {
-  rho  = 0.0;
+  rho = 0;
   for (auto& pt : space.neighbor(pos))
     rho += SPH_PMASS * poly6kern(pt->pos - pos);
 
@@ -140,9 +140,8 @@ void Particle::calc_amount(Space& space)
 void Particle::calc_force(Space& space)
 {
   double pterm, vterm, r, c, diff, adj;
-  Eigen::Vector3d dr, force, fcurr;
-
-  force << 0.0, 0.0, 0.0;
+  Eigen::Vector3d dr, fcurr;
+  Eigen::Vector3d force(0, 0, 0);
 
   for (auto& pt : space.neighbor(pos)){
     if (pos == pt->pos) continue;
