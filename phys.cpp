@@ -140,7 +140,7 @@ void Particle::calc_amount(Space& space)
 void Particle::calc_force(Space& space)
 {
   double pterm, vterm, r, c, diff, adj;
-  Eigen::Vector3d dr, force, fcurr, norm;
+  Eigen::Vector3d dr, force, fcurr;
 
   force << 0.0, 0.0, 0.0;
 
@@ -163,43 +163,17 @@ void Particle::calc_force(Space& space)
   if (accel.norm() > SPH_LIMIT)
     accel *= SPH_LIMIT / accel.norm();
 
-  diff = 2.0 * SPH_RADIUS - (pos(2) - MIN(2)) * SPH_SIMSCALE;
-  if (diff > SPH_EPSILON){
-      norm << 0.0, 0.0, 1.0;
-      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(2);
-      accel += adj * norm;
-  }
-  diff = 2.0 * SPH_RADIUS - (MAX(2) - pos(2)) * SPH_SIMSCALE;
-  if (diff > SPH_EPSILON){
-      norm << 0.0, 0.0, -1.0;
-      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(2);
-      accel += adj * norm;
-  }
-
-  diff = 2.0 * SPH_RADIUS - (pos(0) - MIN(0)) * SPH_SIMSCALE;
-  if (diff > SPH_EPSILON){
-    norm << 1.0, 0.0, 0.0;
-    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(0);
-    accel += adj * norm;
-  }
-  diff = 2.0 * SPH_RADIUS - (MAX(0) - pos(0)) * SPH_SIMSCALE;
-  if (diff > SPH_EPSILON){
-    norm << -1.0, 0.0, 0.0;
-    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(0);
-    accel += adj * norm;
-  }
-
-  diff = 2.0 * SPH_RADIUS - (pos(1) - MIN(1)) * SPH_SIMSCALE;
-  if (diff > SPH_EPSILON){
-    norm << 0.0, 1.0, 0.0;
-    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(1);
-    accel += adj * norm;
-  }
-  diff = 2.0 * SPH_RADIUS - (MAX(1) - pos(1)) * SPH_SIMSCALE;
-  if (diff > SPH_EPSILON){
-    norm << 0.0, -1.0, 0.0;
-    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(1);
-    accel += adj * norm;
+  for (int i = 0; i < 3; i++){
+    diff = 2.0 * SPH_RADIUS - (pos(i) - MIN(i)) * SPH_SIMSCALE;
+    if (diff > SPH_EPSILON){
+      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(i);
+      accel(i) += adj;
+    }
+    diff = 2.0 * SPH_RADIUS - (MAX(i) - pos(i)) * SPH_SIMSCALE;
+    if (diff > SPH_EPSILON){
+      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(i);
+      accel(i) -= adj;
+    }
   }
 
   accel += space.gravity;
