@@ -1,7 +1,7 @@
 #include <GL/glut.h>
 #include "render.hpp"
 
-#define MC_SIZE 0.5
+#define MC_SIZE 2
 
 struct CompVector
 {
@@ -36,7 +36,20 @@ Cube::Cube(void)
 
 void Cube::draw(void)
 {
-  glutSolidCube(MC_SIZE);
+  glTranslated(-0.5, -0.5, -0.5);
+
+  for (int x = 0; x <= 1; x++)
+    for (int y = 0; y <= 1; y++)
+      for (int z = 0; z <= 1; z++){
+	if (m[x][y][z] & ~m[x][y][1 - z] & ~m[x][1 - y][z] & ~m[1 - x][y][z]){
+	  glBegin(GL_TRIANGLES);
+	  glNormal3d(1 - x, 1 - y, 1 - z);
+	  glVertex3d(x, y, 0.5);
+	  glVertex3d(x, 0.5, z);
+	  glVertex3d(0.5, y, z);
+	  glEnd();
+	}
+      }
 }
 
 void render_particles(const Space& space)
@@ -63,12 +76,13 @@ void render_particles(const Space& space)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
+  glScaled(MC_SIZE, MC_SIZE, MC_SIZE);
   for (auto& iter : cubes){
     glPushMatrix();
     glTranslated(
-		 iter.first(0) * MC_SIZE,
-		 iter.first(1) * MC_SIZE,
-		 iter.first(2) * MC_SIZE
+		 iter.first(0),
+		 iter.first(1),
+		 iter.first(2)
 		 );
     iter.second.draw();
     glPopMatrix();
