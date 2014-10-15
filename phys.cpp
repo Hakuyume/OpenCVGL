@@ -19,8 +19,6 @@ static const Eigen::Vector3d   MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   MAX( 20.0, 20.0,  10.0 );
 static const Eigen::Vector3d   INIT_MIN(  0.0,  0.0, -10.0 );
 static const Eigen::Vector3d   INIT_MAX( 10.0, 20.0,  10.0 );
-static const double SpikyKern       = -45.0 / ( M_PI * pow( H, 6 ) );
-static const double LapKern         = 45.0 / ( M_PI * pow( H, 6 ) );
 
 void Space::put_particles(void)
 {
@@ -127,6 +125,28 @@ double Particle::poly6kern(const Eigen::Vector3d& r)
     return 0;
 }
 
+double Particle::lapkern(const Eigen::Vector3d& r)
+{
+  static const double k = 45.0 / (M_PI * pow(H, 6));
+
+  double c = H - r.norm() * SPH_SIMSCALE;
+  if (c > 0)
+    return k * SPH_VISC * c;
+  else
+    return 0;
+}
+
+Eigen::Vector3d Particle::spikykern_grad(const Eigen::Vector3d& r)
+{
+  static const double k = 45.0 / (M_PI * pow(H, 6));
+
+  double c = H - r.norm() * SPH_SIMSCALE;
+  if (c > 0)
+    return k * c * c * r / r.norm();
+  else
+    return Eigen::Vector3d::Zero();
+}
+
 void Particle::calc_amount(Space& space)
 {
   rho = 0;
@@ -138,23 +158,16 @@ void Particle::calc_amount(Space& space)
 
 void Particle::calc_force(Space& space)
 {
-  Eigen::Vector3d force(0, 0, 0);
+  Eigen::Vector3d force_v(0, 0, 0);
+  Eigen::Vector3d force_p(0, 0, 0);
 
   for (auto& pt : space.neighbor(pos)){
     if (pos == pt->pos) continue;
-    Eigen::Vector3d dr = (pos - pt->pos) * SPH_SIMSCALE;
-    double r  = dr.norm();
-    if (H > r){
-	double c = H - r;
-	double pterm = -0.5 * c * SpikyKern * (prs + pt->prs) / r;
-	double vterm = LapKern * SPH_VISC;
-	Eigen::Vector3d fcurr = pterm * dr + vterm * (pt->vel - vel);
-	fcurr *= c / (rho * pt->rho);
-	force += fcurr;
-    }
+    force_v += (pt->vel - vel) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
+    force_p -= (prs + pt->prs) / 2 * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * spikykern_grad(pt->pos - pos);
   }
 
-  accel = force * SPH_PMASS;
+  accel = (force_v + force_p) / SPH_PMASS;
 
   if (accel.norm() > SPH_LIMIT)
     accel *= SPH_LIMIT / accel.norm();
