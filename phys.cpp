@@ -134,7 +134,6 @@ void Particle::calc_amount(Space& space)
     rho += SPH_PMASS * poly6kern(pt->pos - pos);
 
   prs = (rho - SPH_RESTDENSITY) * SPH_INTSTIFF;
-  rho = 1.0 / rho;
 }
 
 void Particle::calc_force(Space& space)
@@ -150,7 +149,7 @@ void Particle::calc_force(Space& space)
 	double pterm = -0.5 * c * SpikyKern * (prs + pt->prs) / r;
 	double vterm = LapKern * SPH_VISC;
 	Eigen::Vector3d fcurr = pterm * dr + vterm * (pt->vel - vel);
-	fcurr *= c * rho * pt->rho;
+	fcurr *= c / (rho * pt->rho);
 	force += fcurr;
     }
   }
