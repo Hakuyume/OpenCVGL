@@ -13,19 +13,18 @@ static const double SPH_RADIUS      = 0.004;
 static const double SPH_EPSILON     = 0.00001;
 static const double SPH_EXTSTIFF    = 10000.0;
 static const double SPH_EXTDAMP     = 256.0;
-static const double SPH_PDIST       = pow(SPH_PMASS / SPH_RESTDENSITY,
-                                          1.0/3.0 );
-static const Eigen::Vector3d   MIN(  0.0,  0.0, -10.0 );
-static const Eigen::Vector3d   MAX( 20.0, 20.0,  10.0 );
-static const Eigen::Vector3d   INIT_MIN(  0.0,  0.0, -10.0 );
-static const Eigen::Vector3d   INIT_MAX( 10.0, 20.0,  10.0 );
+static const double SPH_PDIST       = pow(SPH_PMASS / SPH_RESTDENSITY, 1.0/3.0);
+static const Eigen::Vector3d MIN(0.0, 0.0, -10.0);
+static const Eigen::Vector3d MAX(20.0, 20.0, 10.0);
+static const Eigen::Vector3d INIT_MIN(0.0, 0.0, -10.0);
+static const Eigen::Vector3d INIT_MAX(10.0, 20.0, 10.0);
 
 void Space::put_particles(void)
 {
   double d = SPH_PDIST / SPH_SIMSCALE * 0.95;
-  for ( double x = INIT_MIN(0)+d; x <= INIT_MAX(0)-d; x += d )
-    for ( double y = INIT_MIN(1)+d; y <= INIT_MAX(1)-d; y += d )
-      for ( double z = INIT_MIN(2)+d; z <= INIT_MAX(2)-d; z += d ){
+  for (double x = INIT_MIN(0) + d; x <= INIT_MAX(0) - d; x += d)
+    for (double y = INIT_MIN(1) + d; y <= INIT_MAX(1) - d; y += d)
+      for (double z = INIT_MIN(2) + d; z <= INIT_MAX(2) - d; z += d){
 	Particle p;
 	p.pos << x, y, z;
 	particles.push_back(p);
@@ -62,9 +61,9 @@ std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
   std::list<Particle*> ptrs;
   double d = H / SPH_SIMSCALE;
 
-  for ( int x=-1; x<2; x++ )
-    for ( int y=-1; y<2; y++ )
-      for ( int z=-1; z<2; z++ ){
+  for (int x = -1; x < 2; x++)
+    for (int y = -1; y < 2; y++)
+      for (int z = -1; z < 2; z++){
 	Eigen::Vector3d v(x, y, z);
 	v = r + v * d;
 
@@ -88,11 +87,11 @@ Space::NeighborMapIdx Space::neighbor_map_idx(const Eigen::Vector3d& r)
   int mx, my;
   double d;
   d  = H / SPH_SIMSCALE;
-  x  = floor( (r(0) - MIN(0)) / d );
-  y  = floor( (r(1) - MIN(1)) / d );
-  z  = floor( (r(2) - MIN(2)) / d );
-  mx = floor( (MAX(0) - MIN(0)) / d );
-  my = floor( (MAX(1) - MIN(1)) / d );
+  x  = floor((r(0) - MIN(0)) / d);
+  y  = floor((r(1) - MIN(1)) / d);
+  z  = floor((r(2) - MIN(2)) / d);
+  mx = floor((MAX(0) - MIN(0)) / d);
+  my = floor((MAX(1) - MIN(1)) / d);
   return x + y * mx + z * mx * my;
 }
 
