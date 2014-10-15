@@ -60,21 +60,15 @@ std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
   std::list<Particle*> neighbors;
   double d = KERNEL_SIZE / SPH_SIMSCALE;
 
-  for (int x = -1; x < 2; x++)
-    for (int y = -1; y < 2; y++)
-      for (int z = -1; z < 2; z++){
+  for (int x = -1; x <= 1; x++)
+    for (int y = -1; y <= 1; y++)
+      for (int z = -1; z <= 1; z++){
 	Eigen::Vector3d v(x, y, z);
-	v = r + v * d;
 
-	if (
-	    MIN(0) <= v(0) && v(0) <= MAX(0) &&
-	    MIN(1) <= v(1) && v(1) <= MAX(1) &&
-	    MIN(2) <= v(2) && v(2) <= MAX(2)){
-          auto x = neighbor_map.find(v);
-          if (x != neighbor_map.end())
-	    for (auto& pt : x->second)
-	      neighbors.push_back(pt);
-        }
+	auto iter = neighbor_map.find(r + v * d);
+	if (iter != neighbor_map.end())
+	  for (auto& pt : iter->second)
+	    neighbors.push_back(pt);
       }
   return neighbors;
 }
