@@ -139,19 +139,17 @@ void Particle::calc_amount(Space& space)
 
 void Particle::calc_force(Space& space)
 {
-  double pterm, vterm, r, c, diff, adj;
-  Eigen::Vector3d dr, fcurr;
   Eigen::Vector3d force(0, 0, 0);
 
   for (auto& pt : space.neighbor(pos)){
     if (pos == pt->pos) continue;
-    dr = (pos - pt->pos) * SPH_SIMSCALE;
-    r  = dr.norm();
+    Eigen::Vector3d dr = (pos - pt->pos) * SPH_SIMSCALE;
+    double r  = dr.norm();
     if (H > r){
-	c = H - r;
-	pterm = -0.5 * c * SpikyKern * (prs + pt->prs) / r;
-	vterm = LapKern * SPH_VISC;
-	fcurr = pterm * dr + vterm * (pt->vel - vel);
+	double c = H - r;
+	double pterm = -0.5 * c * SpikyKern * (prs + pt->prs) / r;
+	double vterm = LapKern * SPH_VISC;
+	Eigen::Vector3d fcurr = pterm * dr + vterm * (pt->vel - vel);
 	fcurr *= c * rho * pt->rho;
 	force += fcurr;
     }
@@ -163,16 +161,12 @@ void Particle::calc_force(Space& space)
     accel *= SPH_LIMIT / accel.norm();
 
   for (int i = 0; i < 3; i++){
-    diff = 2.0 * SPH_RADIUS - (pos(i) - MIN(i)) * SPH_SIMSCALE;
-    if (diff > SPH_EPSILON){
-      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(i);
-      accel(i) += adj;
-    }
+    double diff = 2.0 * SPH_RADIUS - (pos(i) - MIN(i)) * SPH_SIMSCALE;
+    if (diff > SPH_EPSILON)
+      accel(i) += SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(i);
     diff = 2.0 * SPH_RADIUS - (MAX(i) - pos(i)) * SPH_SIMSCALE;
-    if (diff > SPH_EPSILON){
-      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(i);
-      accel(i) -= adj;
-    }
+    if (diff > SPH_EPSILON)
+      accel(i) -= SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(i);
   }
 
   accel += space.gravity;
