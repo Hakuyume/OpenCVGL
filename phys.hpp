@@ -29,11 +29,11 @@ private:
   void new_neighbor_map(void);
   void insert_neighbor_map(Particle*);
   void delete_neighbor_map(void);
-  NeighborMapIdx neighbor_map_idx(Eigen::Vector3d);
+  NeighborMapIdx neighbor_map_idx(const Eigen::Vector3d&);
 public:
   std::vector<Particle> particles;
   Eigen::Vector3d gravity;
   void put_particles(void);
   void update_particles(const double dt);
-  std::list<Particle*> neighbor(Eigen::Vector3d r);
+  std::list<Particle*> neighbor(const Eigen::Vector3d& r);
 };

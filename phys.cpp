@@ -63,7 +63,7 @@ void Space::delete_neighbor_map(void)
   delete this->p_nbr_map;
 }
 
-std::list<Particle*> Space::neighbor(Eigen::Vector3d r)
+std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
 {
   std::list<Particle*> ptrs;
   double d = H / SPH_SIMSCALE;
@@ -88,7 +88,7 @@ std::list<Particle*> Space::neighbor(Eigen::Vector3d r)
   return ptrs;
 }
 
-Space::NeighborMapIdx Space::neighbor_map_idx(Eigen::Vector3d r)
+Space::NeighborMapIdx Space::neighbor_map_idx(const Eigen::Vector3d& r)
 {
   int x, y, z;
   int mx, my;
