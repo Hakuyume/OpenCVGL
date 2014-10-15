@@ -163,11 +163,10 @@ void Particle::calc_force(Space& space)
 void Particle::advance(Space& space)
 {
   Eigen::Vector3d accel, norm;
-  double speed, diff, adj;
+  double diff, adj;
   
   accel = this->f * SPH_PMASS;
 
-  speed = accel.norm() * accel.norm();
   if (accel.norm() > SPH_LIMIT)
     accel *= SPH_LIMIT / accel.norm();
 
