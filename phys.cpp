@@ -19,6 +19,18 @@ static const Eigen::Vector3d MAX(20.0, 20.0, 10.0);
 static const Eigen::Vector3d INIT_MIN(0.0, 0.0, -10.0);
 static const Eigen::Vector3d INIT_MAX(10.0, 20.0, 10.0);
 
+bool CompVector::operator()(const Eigen::Vector3d& a, const Eigen::Vector3d& b)
+{
+  double d = H / SPH_SIMSCALE;
+
+  for (int i = 0; i < 3; i++)
+    if (floor(a(i) / d) < floor(b(i) / d))
+      return true;
+    else if (floor(a(i) / d) > floor(b(i) / d))
+      return false;
+  return false;
+}
+
 void Space::put_particles(void)
 {
   double d = SPH_PDIST / SPH_SIMSCALE * 0.95;
@@ -40,14 +52,13 @@ void Space::new_neighbor_map(void)
 
 void Space::insert_neighbor_map(Particle* pt)
 {
-  NeighborMapIdx ix = neighbor_map_idx(pt->pos);
-  NeighborMap::iterator iter = p_nbr_map->find(ix);
+  auto iter = p_nbr_map->find(pt->pos);
   if (iter != p_nbr_map->end())
     iter->second.push_back(pt);
   else{
     std::list<Particle*> ptrs;
     ptrs.push_back(pt);
-    p_nbr_map->insert(NeighborMap::value_type(ix, ptrs));
+    p_nbr_map->insert(NeighborMap::value_type(pt->pos, ptrs));
   }
 }
 
@@ -71,28 +82,13 @@ std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
 	    MIN(0) <= v(0) && v(0) <= MAX(0) &&
 	    MIN(1) <= v(1) && v(1) <= MAX(1) &&
 	    MIN(2) <= v(2) && v(2) <= MAX(2)){
-          NeighborMapIdx ix = neighbor_map_idx(v);
-          NeighborMap::iterator x = p_nbr_map->find(ix);
+          auto x = p_nbr_map->find(v);
           if (x != p_nbr_map->end())
 	    for (auto& pt : x->second)
 	      ptrs.push_back(pt);
         }
       }
   return ptrs;
-}
-
-Space::NeighborMapIdx Space::neighbor_map_idx(const Eigen::Vector3d& r)
-{
-  int x, y, z;
-  int mx, my;
-  double d;
-  d  = H / SPH_SIMSCALE;
-  x  = floor((r(0) - MIN(0)) / d);
-  y  = floor((r(1) - MIN(1)) / d);
-  z  = floor((r(2) - MIN(2)) / d);
-  mx = floor((MAX(0) - MIN(0)) / d);
-  my = floor((MAX(1) - MIN(1)) / d);
-  return x + y * mx + z * mx * my;
 }
 
 void Space::update_particles(const double dt)

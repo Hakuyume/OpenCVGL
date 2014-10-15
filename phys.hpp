@@ -5,6 +5,10 @@
 #include <map>
 #include <list>
 
+struct CompVector {
+  bool operator()(const Eigen::Vector3d& a, const Eigen::Vector3d& b);
+};
+
 class Particle;
 class Space;
 
@@ -27,13 +31,11 @@ public:
 class Space
 {
 private:
-  typedef long NeighborMapIdx;
-  typedef std::map<NeighborMapIdx, std::list<Particle*> > NeighborMap;
+  typedef std::map<Eigen::Vector3d, std::list<Particle*>, CompVector> NeighborMap;
   NeighborMap* p_nbr_map;
   void new_neighbor_map(void);
   void insert_neighbor_map(Particle*);
   void delete_neighbor_map(void);
-  NeighborMapIdx neighbor_map_idx(const Eigen::Vector3d&);
 public:
   std::vector<Particle> particles;
   Eigen::Vector3d gravity;
