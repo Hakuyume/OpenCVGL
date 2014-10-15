@@ -43,6 +43,7 @@ void render_particles(const Space& space)
   GLfloat facecolor[] = {0, 0, 1, 0.7};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
+  glPushMatrix();
   glScaled(MC_SIZE, MC_SIZE, MC_SIZE);
   for (auto& iter : cubes){
     glPushMatrix();
@@ -54,6 +55,7 @@ void render_particles(const Space& space)
     iter.second.draw();
     glPopMatrix();
   }
+  glPopMatrix();
 }
 
 void Cube::draw(void)
