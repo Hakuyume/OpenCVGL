@@ -11,11 +11,11 @@ class Space;
 class Particle
 {
 private:
+  double rho, prs;
   Eigen::Vector3d vel, f;
   double poly6kern(const Eigen::Vector3d& r);
 public:
   Eigen::Vector3d pos;
-  double rho, prs;
   Particle(void);
   void calc_amount(Space& space);
   void calc_force(Space& space);
