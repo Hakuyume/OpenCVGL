@@ -5,7 +5,7 @@ static const double SPH_RESTDENSITY = 600.0;
 static const double SPH_INTSTIFF    = 3.0;
 static const double SPH_PMASS       = 0.00020543;
 static const double SPH_SIMSCALE    = 0.004;
-static const double H               = 0.01;
+static const double KERNEL_SIZE     = 0.01;
 static const double SPH_VISC        = 0.2;
 static const double SPH_LIMIT       = 200.0;
 static const double SPH_RADIUS      = 0.004;
@@ -20,7 +20,7 @@ static const Eigen::Vector3d INIT_MAX(10.0, 20.0, 10.0);
 
 bool CompVector::operator()(const Eigen::Vector3d& a, const Eigen::Vector3d& b)
 {
-  double d = H / SPH_SIMSCALE;
+  double d = KERNEL_SIZE / SPH_SIMSCALE;
 
   for (int i = 0; i < 3; i++)
     if (floor(a(i) / d) < floor(b(i) / d))
@@ -58,7 +58,7 @@ void Space::update_neighbor_map(void)
 std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
 {
   std::list<Particle*> neighbors;
-  double d = H / SPH_SIMSCALE;
+  double d = KERNEL_SIZE / SPH_SIMSCALE;
 
   for (int x = -1; x < 2; x++)
     for (int y = -1; y < 2; y++)
@@ -98,9 +98,9 @@ Particle::Particle(void)
 
 double Particle::poly6kern(const Eigen::Vector3d& r)
 {
-  static const double k = 315.0 / (64.0 * M_PI * pow(H, 9));
+  static const double k = 315.0 / (64.0 * M_PI * pow(KERNEL_SIZE, 9));
 
-  double c = H * H - r.norm() * r.norm() * SPH_SIMSCALE * SPH_SIMSCALE;
+  double c = KERNEL_SIZE * KERNEL_SIZE - r.norm() * r.norm() * SPH_SIMSCALE * SPH_SIMSCALE;
 
   if (c > 0)
     return k * c * c * c;
@@ -110,9 +110,9 @@ double Particle::poly6kern(const Eigen::Vector3d& r)
 
 double Particle::lapkern(const Eigen::Vector3d& r)
 {
-  static const double k = 45.0 / (M_PI * pow(H, 6));
+  static const double k = 45.0 / (M_PI * pow(KERNEL_SIZE, 6));
 
-  double c = H - r.norm() * SPH_SIMSCALE;
+  double c = KERNEL_SIZE - r.norm() * SPH_SIMSCALE;
   if (c > 0)
     return k * SPH_VISC * c;
   else
@@ -121,9 +121,9 @@ double Particle::lapkern(const Eigen::Vector3d& r)
 
 Eigen::Vector3d Particle::spikykern_grad(const Eigen::Vector3d& r)
 {
-  static const double k = 45.0 / (M_PI * pow(H, 6));
+  static const double k = 45.0 / (M_PI * pow(KERNEL_SIZE, 6));
 
-  double c = H - r.norm() * SPH_SIMSCALE;
+  double c = KERNEL_SIZE - r.norm() * SPH_SIMSCALE;
   if (c > 0)
     return k * c * c * r / r.norm();
   else
