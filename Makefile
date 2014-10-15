@@ -4,14 +4,17 @@ GL_FLAGS=`pkg-config gl glu --cflags`
 GL_LIBS=`pkg-config gl glu --libs` -lglut
 EIGEN_FLAGS=-Ieigen/
 
-main: main.o phys.o
+main: main.o phys.o render.o
 	$(CXX) $(CXX_FLAGS) $^ -o $@ $(GL_LIBS)
 
-main.o: main.cpp phys.hpp
+main.o: main.cpp phys.hpp render.hpp
 	$(CXX) $(CXX_FLAGS) -c main.cpp $(GL_FLAGS) $(EIGEN_FLAGS)
 
 phys.o: phys.hpp phys.cpp
 	$(CXX) $(CXX_FLAGS) -c phys.cpp $(EIGEN_FLAGS)
+
+render.o: phys.hpp render.hpp render.cpp
+	$(CXX) $(CXX_FLAGS) -c render.cpp $(GL_FLAGS) $(EIGEN_FLAGS)
 
 clean:
 	rm -f main

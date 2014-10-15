@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 #include <cmath>
 #include "phys.hpp"
+#include "render.hpp"
 
 #define INTERVAL 0.004
 #define GRAVITY 9.8
@@ -33,17 +34,8 @@ void display(void)
 
   glRotated(theta * 180 / M_PI, 0, 0, 1);
 
-  GLfloat facecolor[] = {0, 0, 1, 0.7};
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
-
   glTranslated(-10, -10, 0);
-
-  for (auto& pt : space.particles){
-    glPushMatrix();
-    glTranslated(pt.pos(0), pt.pos(1), pt.pos(2));
-    glutSolidSphere(0.5, 12, 12);
-    glPopMatrix();
-  }
+  render_particles(space);
 
   glDisable(GL_LIGHT0);
   glDisable(GL_LIGHTING);
