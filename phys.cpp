@@ -30,33 +30,33 @@ void Space::put_particles(void)
       for ( double z = INIT_MIN(2)+d; z <= INIT_MAX(2)-d; z += d ){
 	Particle p;
 	p.pos << x, y, z;
-	this->particles.push_back(p);
+	particles.push_back(p);
       }
 }
 
 void Space::new_neighbor_map(void)
 {
-  this->p_nbr_map = new NeighborMap();
-  for (auto& pt : this->particles)
-    this->insert_neighbor_map(&pt);
+  p_nbr_map = new NeighborMap();
+  for (auto& pt : particles)
+    insert_neighbor_map(&pt);
 }
 
 void Space::insert_neighbor_map(Particle* pt)
 {
   NeighborMapIdx ix = neighbor_map_idx(pt->pos);
-  NeighborMap::iterator iter = this->p_nbr_map->find(ix);
+  NeighborMap::iterator iter = p_nbr_map->find(ix);
   if (iter != p_nbr_map->end())
     iter->second.push_back(pt);
   else{
     std::list<Particle*> ptrs;
     ptrs.push_back(pt);
-    this->p_nbr_map->insert(NeighborMap::value_type(ix, ptrs));
+    p_nbr_map->insert(NeighborMap::value_type(ix, ptrs));
   }
 }
 
 void Space::delete_neighbor_map(void)
 {
-  delete this->p_nbr_map;
+  delete p_nbr_map;
 }
 
 std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
@@ -75,7 +75,7 @@ std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
 	    MIN(1) <= v(1) && v(1) <= MAX(1) &&
 	    MIN(2) <= v(2) && v(2) <= MAX(2)){
           NeighborMapIdx ix = neighbor_map_idx(v);
-          NeighborMap::iterator x = this->p_nbr_map->find(ix);
+          NeighborMap::iterator x = p_nbr_map->find(ix);
           if (x != p_nbr_map->end())
 	    for (auto& pt : x->second)
 	      ptrs.push_back(pt);
@@ -100,19 +100,19 @@ Space::NeighborMapIdx Space::neighbor_map_idx(const Eigen::Vector3d& r)
 
 void Space::update_particles(const double dt)
 {
-  this->new_neighbor_map();
-  for (auto& pt : this->particles)
+  new_neighbor_map();
+  for (auto& pt : particles)
     pt.calc_amount(*this);
-  for (auto& pt : this->particles)
+  for (auto& pt : particles)
     pt.calc_force(*this);
-  for (auto& pt : this->particles)
+  for (auto& pt : particles)
     pt.advance(*this);
-  this->delete_neighbor_map();
+  delete_neighbor_map();
 }
 
 Particle::Particle(void)
 {
-  this->vel = Eigen::Vector3d::Zero();
+  vel = Eigen::Vector3d::Zero();
 }
 
 double Particle::poly6kern(const Eigen::Vector3d& r)
@@ -129,12 +129,12 @@ double Particle::poly6kern(const Eigen::Vector3d& r)
 
 void Particle::calc_amount(Space& space)
 {
-  this->rho  = 0.0;
-  for (auto& pt : space.neighbor(this->pos))
-    this->rho += SPH_PMASS * poly6kern(pt->pos - this->pos);
+  rho  = 0.0;
+  for (auto& pt : space.neighbor(pos))
+    rho += SPH_PMASS * poly6kern(pt->pos - pos);
 
-  this->prs = (this->rho - SPH_RESTDENSITY) * SPH_INTSTIFF;
-  this->rho = 1.0 / this->rho;
+  prs = (rho - SPH_RESTDENSITY) * SPH_INTSTIFF;
+  rho = 1.0 / rho;
 }
 
 void Particle::calc_force(Space& space)
@@ -144,70 +144,70 @@ void Particle::calc_force(Space& space)
 
   force << 0.0, 0.0, 0.0;
 
-  for (auto& pt : space.neighbor(this->pos)){
-    if ( this->pos == pt->pos ) continue;
-    dr = (this->pos - pt->pos) * SPH_SIMSCALE;
+  for (auto& pt : space.neighbor(pos)){
+    if (pos == pt->pos) continue;
+    dr = (pos - pt->pos) * SPH_SIMSCALE;
     r  = dr.norm();
     if (H > r){
 	c = H - r;
-	pterm = -0.5 * c * SpikyKern * (this->prs + pt->prs) / r;
+	pterm = -0.5 * c * SpikyKern * (prs + pt->prs) / r;
 	vterm = LapKern * SPH_VISC;
-	fcurr = pterm * dr + vterm * (pt->vel - this->vel);
-	fcurr *= c * this->rho * pt->rho;
+	fcurr = pterm * dr + vterm * (pt->vel - vel);
+	fcurr *= c * rho * pt->rho;
 	force += fcurr;
     }
   }
 
-  this->accel = force * SPH_PMASS;
+  accel = force * SPH_PMASS;
 
-  if (this->accel.norm() > SPH_LIMIT)
-    this->accel *= SPH_LIMIT / this->accel.norm();
+  if (accel.norm() > SPH_LIMIT)
+    accel *= SPH_LIMIT / accel.norm();
 
-  diff = 2.0 * SPH_RADIUS - (this->pos(2) - MIN(2)) * SPH_SIMSCALE;
+  diff = 2.0 * SPH_RADIUS - (pos(2) - MIN(2)) * SPH_SIMSCALE;
   if (diff > SPH_EPSILON){
       norm << 0.0, 0.0, 1.0;
-      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(2);
-      this->accel += adj * norm;
+      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(2);
+      accel += adj * norm;
   }
-  diff = 2.0 * SPH_RADIUS - (MAX(2) - this->pos(2)) * SPH_SIMSCALE;
+  diff = 2.0 * SPH_RADIUS - (MAX(2) - pos(2)) * SPH_SIMSCALE;
   if (diff > SPH_EPSILON){
       norm << 0.0, 0.0, -1.0;
-      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(2);
-      this->accel += adj * norm;
+      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(2);
+      accel += adj * norm;
   }
 
-  diff = 2.0 * SPH_RADIUS - (this->pos(0) - MIN(0)) * SPH_SIMSCALE;
+  diff = 2.0 * SPH_RADIUS - (pos(0) - MIN(0)) * SPH_SIMSCALE;
   if (diff > SPH_EPSILON){
     norm << 1.0, 0.0, 0.0;
-    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(0);
-    this->accel += adj * norm;
+    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(0);
+    accel += adj * norm;
   }
-  diff = 2.0 * SPH_RADIUS - (MAX(0) - this->pos(0)) * SPH_SIMSCALE;
+  diff = 2.0 * SPH_RADIUS - (MAX(0) - pos(0)) * SPH_SIMSCALE;
   if (diff > SPH_EPSILON){
     norm << -1.0, 0.0, 0.0;
-    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(0);
-    this->accel += adj * norm;
+    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(0);
+    accel += adj * norm;
   }
 
-  diff = 2.0 * SPH_RADIUS - (this->pos(1) - MIN(1)) * SPH_SIMSCALE;
+  diff = 2.0 * SPH_RADIUS - (pos(1) - MIN(1)) * SPH_SIMSCALE;
   if (diff > SPH_EPSILON){
     norm << 0.0, 1.0, 0.0;
-    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(1);
-    this->accel += adj * norm;
+    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(1);
+    accel += adj * norm;
   }
-  diff = 2.0 * SPH_RADIUS - (MAX(1) - this->pos(1)) * SPH_SIMSCALE;
+  diff = 2.0 * SPH_RADIUS - (MAX(1) - pos(1)) * SPH_SIMSCALE;
   if (diff > SPH_EPSILON){
     norm << 0.0, -1.0, 0.0;
-    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(1);
-    this->accel += adj * norm;
+    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(1);
+    accel += adj * norm;
   }
-      
-  this->accel += space.gravity;
+
+  accel += space.gravity;
 }
 
 void Particle::advance(Space& space)
 {
-  this->vel += this->accel * DT;
-  this->pos += this->vel * DT / SPH_SIMSCALE;
+  vel += accel * DT;
+  pos += vel * DT / SPH_SIMSCALE;
 }
 
