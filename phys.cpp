@@ -139,9 +139,9 @@ void Particle::calc_amount(Space& space)
 
 void Particle::calc_force(Space& space)
 {
-  double pterm, vterm, r, c;
-  Eigen::Vector3d dr, force, fcurr;
-  
+  double pterm, vterm, r, c, diff, adj;
+  Eigen::Vector3d dr, force, fcurr, norm;
+
   force << 0.0, 0.0, 0.0;
 
   for (auto& pt : space.neighbor(this->pos)){
@@ -157,69 +157,57 @@ void Particle::calc_force(Space& space)
 	force += fcurr;
     }
   }
-  this->f = force;
+
+  this->accel = force * SPH_PMASS;
+
+  if (this->accel.norm() > SPH_LIMIT)
+    this->accel *= SPH_LIMIT / this->accel.norm();
+
+  diff = 2.0 * SPH_RADIUS - (this->pos(2) - MIN(2)) * SPH_SIMSCALE;
+  if (diff > SPH_EPSILON){
+      norm << 0.0, 0.0, 1.0;
+      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(2);
+      this->accel += adj * norm;
+  }
+  diff = 2.0 * SPH_RADIUS - (MAX(2) - this->pos(2)) * SPH_SIMSCALE;
+  if (diff > SPH_EPSILON){
+      norm << 0.0, 0.0, -1.0;
+      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(2);
+      this->accel += adj * norm;
+  }
+
+  diff = 2.0 * SPH_RADIUS - (this->pos(0) - MIN(0)) * SPH_SIMSCALE;
+  if (diff > SPH_EPSILON){
+    norm << 1.0, 0.0, 0.0;
+    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(0);
+    this->accel += adj * norm;
+  }
+  diff = 2.0 * SPH_RADIUS - (MAX(0) - this->pos(0)) * SPH_SIMSCALE;
+  if (diff > SPH_EPSILON){
+    norm << -1.0, 0.0, 0.0;
+    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(0);
+    this->accel += adj * norm;
+  }
+
+  diff = 2.0 * SPH_RADIUS - (this->pos(1) - MIN(1)) * SPH_SIMSCALE;
+  if (diff > SPH_EPSILON){
+    norm << 0.0, 1.0, 0.0;
+    adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(1);
+    this->accel += adj * norm;
+  }
+  diff = 2.0 * SPH_RADIUS - (MAX(1) - this->pos(1)) * SPH_SIMSCALE;
+  if (diff > SPH_EPSILON){
+    norm << 0.0, -1.0, 0.0;
+    adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(1);
+    this->accel += adj * norm;
+  }
+      
+  this->accel += space.gravity;
 }
 
 void Particle::advance(Space& space)
 {
-  Eigen::Vector3d accel, norm;
-  double diff, adj;
-  
-  accel = this->f * SPH_PMASS;
-
-  if (accel.norm() > SPH_LIMIT)
-    accel *= SPH_LIMIT / accel.norm();
-
-  // Z-axis walls
-  diff = 2.0 * SPH_RADIUS - ( this->pos(2) - MIN(2) ) * SPH_SIMSCALE;
-  if ( diff > SPH_EPSILON )
-    {
-      norm << 0.0, 0.0, 1.0;
-      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(2);
-      accel += adj * norm;
-    }
-  diff = 2.0 * SPH_RADIUS - ( MAX(2) - this->pos(2) ) * SPH_SIMSCALE;
-  if ( diff > SPH_EPSILON )
-    {
-      norm << 0.0, 0.0, -1.0;
-      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(2);
-      accel += adj * norm;
-    }
-  
-  // X-axis walls
-  diff = 2.0 * SPH_RADIUS - ( this->pos(0) - MIN(0) ) * SPH_SIMSCALE;
-  if ( diff > SPH_EPSILON )
-    {
-      norm << 1.0, 0.0, 0.0;
-      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(0);
-      accel += adj * norm;
-    }
-  diff = 2.0 * SPH_RADIUS - ( MAX(0) - this->pos(0) ) * SPH_SIMSCALE;
-  if ( diff > SPH_EPSILON )
-    {
-      norm << -1.0, 0.0, 0.0;
-      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(0);
-      accel += adj * norm;
-    }
-  
-  // Y-axis walls
-  diff = 2.0 * SPH_RADIUS - ( this->pos(1) - MIN(1) ) * SPH_SIMSCALE;
-  if ( diff > SPH_EPSILON )
-    {
-      norm << 0.0, 1.0, 0.0;
-      adj = SPH_EXTSTIFF * diff - SPH_EXTDAMP * this->vel(1);
-      accel += adj * norm;
-    }
-  diff = 2.0 * SPH_RADIUS - ( MAX(1) - this->pos(1) ) * SPH_SIMSCALE;
-  if ( diff > SPH_EPSILON )
-    {
-      norm << 0.0, -1.0, 0.0;
-      adj = SPH_EXTSTIFF * diff + SPH_EXTDAMP * this->vel(1);
-      accel += adj * norm;
-    }
-      
-  accel += space.gravity;
-  this->vel += accel * DT;
+  this->vel += this->accel * DT;
   this->pos += this->vel * DT / SPH_SIMSCALE;
 }
 

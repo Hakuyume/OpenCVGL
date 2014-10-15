@@ -12,7 +12,7 @@ class Particle
 {
 private:
   double rho, prs;
-  Eigen::Vector3d vel, f;
+  Eigen::Vector3d vel, accel;
   double poly6kern(const Eigen::Vector3d& r);
 public:
   Eigen::Vector3d pos;
