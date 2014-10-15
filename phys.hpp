@@ -32,10 +32,8 @@ class Space
 {
 private:
   typedef std::map<Eigen::Vector3d, std::list<Particle*>, CompVector> NeighborMap;
-  NeighborMap* p_nbr_map;
-  void new_neighbor_map(void);
-  void insert_neighbor_map(Particle*);
-  void delete_neighbor_map(void);
+  NeighborMap neighbor_map;
+  void update_neighbor_map(void);
 public:
   std::vector<Particle> particles;
   Eigen::Vector3d gravity;

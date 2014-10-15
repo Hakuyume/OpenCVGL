@@ -43,33 +43,22 @@ void Space::put_particles(void)
       }
 }
 
-void Space::new_neighbor_map(void)
+void Space::update_neighbor_map(void)
 {
-  p_nbr_map = new NeighborMap();
-  for (auto& pt : particles)
-    insert_neighbor_map(&pt);
-}
-
-void Space::insert_neighbor_map(Particle* pt)
-{
-  auto iter = p_nbr_map->find(pt->pos);
-  if (iter != p_nbr_map->end())
-    iter->second.push_back(pt);
-  else{
-    std::list<Particle*> ptrs;
-    ptrs.push_back(pt);
-    p_nbr_map->insert(NeighborMap::value_type(pt->pos, ptrs));
+  neighbor_map.clear();
+  for (auto& pt : particles){
+    auto iter = neighbor_map.find(pt.pos);
+    if (iter == neighbor_map.end()){
+      std::list<Particle*> pts;
+      iter = neighbor_map.insert(iter, NeighborMap::value_type(pt.pos, pts));
+    }
+    iter->second.push_back(&pt);
   }
-}
-
-void Space::delete_neighbor_map(void)
-{
-  delete p_nbr_map;
 }
 
 std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
 {
-  std::list<Particle*> ptrs;
+  std::list<Particle*> neighbors;
   double d = H / SPH_SIMSCALE;
 
   for (int x = -1; x < 2; x++)
@@ -82,25 +71,25 @@ std::list<Particle*> Space::neighbor(const Eigen::Vector3d& r)
 	    MIN(0) <= v(0) && v(0) <= MAX(0) &&
 	    MIN(1) <= v(1) && v(1) <= MAX(1) &&
 	    MIN(2) <= v(2) && v(2) <= MAX(2)){
-          auto x = p_nbr_map->find(v);
-          if (x != p_nbr_map->end())
+          auto x = neighbor_map.find(v);
+          if (x != neighbor_map.end())
 	    for (auto& pt : x->second)
-	      ptrs.push_back(pt);
+	      neighbors.push_back(pt);
         }
       }
-  return ptrs;
+  return neighbors;
 }
 
 void Space::update_particles(const double dt)
 {
-  new_neighbor_map();
+  update_neighbor_map();
+
   for (auto& pt : particles)
     pt.calc_amount(*this);
   for (auto& pt : particles)
     pt.calc_force(*this);
   for (auto& pt : particles)
     pt.advance(*this);
-  delete_neighbor_map();
 }
 
 Particle::Particle(void)
