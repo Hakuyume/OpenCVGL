@@ -7,8 +7,8 @@
 #define GRAVITY 9.8
 
 bool left_button = false;
+static int mouse_x0, mouse_y0;
 double r = 50;
-double theta = 0;
 
 Space space;
 
@@ -32,10 +32,10 @@ void display(void)
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-  glRotated(theta * 180 / M_PI, 0, 0, 1);
-
+  glPushMatrix();
   glTranslated(-10, -10, 0);
   render_particles(space);
+  glPopMatrix();
 
   glDisable(GL_LIGHT0);
   glDisable(GL_LIGHTING);
@@ -69,9 +69,12 @@ void mouse(int button, int state, int x, int y)
     switch(state){
     case GLUT_UP:
       left_button = false;
+      space.gravity << 0, - GRAVITY, 0;
       break;
     case GLUT_DOWN:
       left_button = true;
+      mouse_x0 = x;
+      mouse_y0 = y;
       break;
     }
     break;
@@ -80,15 +83,8 @@ void mouse(int button, int state, int x, int y)
 
 void motion(int x, int y)
 {
-  static int x0;
-
-  if (left_button){
-    theta += 0.01 * (x - x0);
-
-    space.gravity << sin(theta), cos(theta), 0;
-    space.gravity *= -GRAVITY;
-  }
-  x0 = x;
+  if (left_button)
+    space.gravity << x - mouse_x0, - ((y - mouse_y0) + GRAVITY), 0;
 
   glutPostRedisplay();
 }
