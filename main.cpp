@@ -33,6 +33,27 @@ void display(void)
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
   glPushMatrix();
+  glTranslated(0, -15, 0);
+  glScaled(5, 5, 5);
+  for (int i = -3; i <= 3; i++)
+    for (int j = -3; j <= 3; j++){
+      glPushMatrix();
+      glTranslated(i, 0, j);
+      GLfloat facecolor[] = {0, 0, 0, 1};
+      facecolor[0] = abs(i + j) % 2;
+      glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
+      glBegin(GL_QUADS);
+      glNormal3d(0, 1, 0);
+      glVertex3d(-0.5, 0, -0.5);
+      glVertex3d(-0.5, 0, +0.5);
+      glVertex3d(+0.5, 0, +0.5);
+      glVertex3d(+0.5, 0, -0.5);
+      glEnd();
+      glPopMatrix();
+    }
+  glPopMatrix();
+
+  glPushMatrix();
   render_particles(space);
   glPopMatrix();
 
