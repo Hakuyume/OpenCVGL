@@ -162,4 +162,71 @@ void Cube::draw(void)
       glVertex3d(1, 0, 0.5);
       glEnd();
     }
+
+  for (int i = 0; i <= 1; i++)
+    for (int j = 0; j <= 1; j++)
+      for (int k = 0; k <= 1; k++)
+	if (
+	    m[i][j][k] & m[i][j][1 - k] & m[i][1 - j][k] &
+	    ~m[1 - i][j][k] & ~m[1 - i][j][1 - k] & ~m[1 - i][1 - j][k] &
+	    ~m[i][1 - j][1 - k]
+	    ){
+	  glBegin(GL_TRIANGLES);
+	  glNormal3d(1 - i, 0, 0);
+	  glVertex3d(0.5, j, k);
+	  glVertex3d(0.5, j, 1 - k);
+	  glVertex3d(0.5, 1 - j, k);
+	  glEnd();
+	  glBegin(GL_QUADS);
+	  glNormal3d(1 - i, 1 - j, 1 - k);
+	  glVertex3d(0.5, j, 1 - k);
+	  glVertex3d(0.5, 1 - j, k);
+	  glVertex3d(i, 1 - j, 0.5);
+	  glVertex3d(i, 0.5, 1 - k);
+	  glEnd();
+	}
+  for (int i = 0; i <= 1; i++)
+    for (int j = 0; j <= 1; j++)
+      for (int k = 0; k <= 1; k++)
+	if (
+	    m[k][i][j] & m[1 - k][i][j] & m[k][i][1 - j] &
+	    ~m[k][1 - i][j] & ~m[1 - k][1 - i][j] & ~m[k][1 - i][1 - j] &
+	    ~m[1 - k][i][1 - j]
+	    ){
+	  glBegin(GL_TRIANGLES);
+	  glNormal3d(0, 1 - i, 0);
+	  glVertex3d(k, 0.5, j);
+	  glVertex3d(1 - k, 0.5, j);
+	  glVertex3d(k, 0.5, 1 - j);
+	  glEnd();
+	  glBegin(GL_QUADS);
+	  glNormal3d(1 - k, 1 - i, 1 - j);
+	  glVertex3d(1 - k, 0.5, j);
+	  glVertex3d(k, 0.5, 1 - j);
+	  glVertex3d(0.5, i, 1 - j);
+	  glVertex3d(1 - k, i, 0.5);
+	  glEnd();
+	}
+  for (int i = 0; i <= 1; i++)
+    for (int j = 0; j <= 1; j++)
+      for (int k = 0; k <= 1; k++)
+	if (
+	    m[j][k][i] & m[j][1 - k][i] & m[1 - j][k][i] &
+	    ~m[j][k][1 - i] & ~m[j][1 - k][1 - i] & ~m[1 - j][k][1 - i] &
+	    ~m[1 - j][1 - k][i]
+	    ){
+	  glBegin(GL_TRIANGLES);
+	  glNormal3d(0, 0, 1 - i);
+	  glVertex3d(j, k, 0.5);
+	  glVertex3d(j, 1 - k, 0.5);
+	  glVertex3d(1 - j, k, 0.5);
+	  glEnd();
+	  glBegin(GL_QUADS);
+	  glNormal3d(1 - j, 1 - k, 1 - i);
+	  glVertex3d(j, 1 - k, 0.5);
+	  glVertex3d(1 - j, k, 0.5);
+	  glVertex3d(1 - j, 0.5, i);
+	  glVertex3d(0.5, 1 - k, i);
+	  glEnd();
+	}
 }
