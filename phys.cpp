@@ -90,7 +90,7 @@ void Space::update_particles(const double dt)
   for (auto& pt : particles)
     pt.calc_amount(*this);
   for (auto& pt : particles)
-    pt.calc_force(*this);
+    pt.calc_accel(*this);
   for (auto& pt : particles)
     pt.move(dt);
 }
@@ -143,7 +143,7 @@ void Particle::calc_amount(Space& space)
   prs = (rho - SPH_RESTDENSITY) * SPH_INTSTIFF;
 }
 
-void Particle::calc_force(Space& space)
+void Particle::calc_accel(Space& space)
 {
   Eigen::Vector3d force_v(0, 0, 0);
   Eigen::Vector3d force_p(0, 0, 0);

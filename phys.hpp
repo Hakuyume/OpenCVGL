@@ -25,7 +25,7 @@ public:
   Eigen::Vector3d pos;
   Particle(void);
   void calc_amount(Space& space);
-  void calc_force(Space& space);
+  void calc_accel(Space& space);
   void move(const double dt);
 };
 
