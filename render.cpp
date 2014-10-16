@@ -58,229 +58,68 @@ void render_particles(const Space& space)
   glPopMatrix();
 }
 
+struct Vertex
+{
+  Eigen::Vector3d pos, norm;
+};
+
 void Cube::draw(void)
 {
+  glutWireCube(1);
+
   glTranslated(-0.5, -0.5, -0.5);
 
-  for (int x = 0; x <= 1; x++)
-    for (int y = 0; y <= 1; y++)
-      for (int z = 0; z <= 1; z++)
-	if (m[x][y][z] & ~m[x][y][1 - z] & ~m[x][1 - y][z] & ~m[1 - x][y][z]){
-	  glBegin(GL_TRIANGLES);
-
-	  glNormal3d(0, 0, 1 - z);
-	  glVertex3d(x, y, 0.5);
-
-	  glNormal3d(0, 1 - y, 0);
-	  glVertex3d(x, 0.5, z);
-
-	  glNormal3d(1 - x, 0, 0);
-	  glVertex3d(0.5, y, z);
-
-	  glEnd();
-	}
+  std::vector<Vertex> vs;
 
   for (int i = 0; i <= 1; i++)
-    for (int j = 0; j <= 1; j++)
-      if (
-	  m[i][j][0] & ~m[i][1 - j][0] & ~m[1 - i][j][0] &
-	  m[i][j][1] & ~m[i][1 - j][1] & ~m[1 - i][j][1]
-	  ){
-	glBegin(GL_QUADS);
-
-	glNormal3d(0, 1 - j, 0);
-	glVertex3d(i, 0.5, 0);
-
-	glNormal3d(1 - i, 0, 0);
-	glVertex3d(0.5, j, 0);
-
-	glNormal3d(1 - i, 0, 0);
-	glVertex3d(0.5, j, 1);
-
-	glNormal3d(0, 1 - j, 0);
-	glVertex3d(i, 0.5, 1);
-
-	glEnd();
+    for (int j = 0; j <= 1; j++){
+      if (m[0][i][j] & ~m[1][i][j]){
+	Vertex v;
+	v.pos << 0.5, i, j;
+	v.norm << 1, 0, 0;
+	vs.push_back(v);
+      }else if (~m[0][i][j] & m[1][i][j]){
+	Vertex v;
+	v.pos << 0.5, i, j;
+	v.norm << -1, 0, 0;
+	vs.push_back(v);
       }
-  for (int i = 0; i <= 1; i++)
-    for (int j = 0; j <= 1; j++)
-      if (
-	  m[0][i][j] & ~m[0][i][1 - j] & ~m[0][1 - i][j] &
-	  m[1][i][j] & ~m[1][i][1 - j] & ~m[1][1 - i][j]
-	  ){
-	glBegin(GL_QUADS);
-
-	glNormal3d(0, 0, 1 - j);
-	glVertex3d(0, i, 0.5);
-
-	glNormal3d(0, 1 - i, 0);
-	glVertex3d(0, 0.5, j);
-
-	glNormal3d(0, 1 - i, 0);
-	glVertex3d(1, 0.5, j);
-
-	glNormal3d(0, 0, 1 - j);
-	glVertex3d(1, i, 0.5);
-
-	glEnd();
+      if (m[j][0][i] & ~m[j][1][i]){
+	Vertex v;
+	v.pos << j, 0.5, i;
+	v.norm << 0, 1, 0;
+	vs.push_back(v);
+      }else if (~m[j][0][i] & m[j][1][i]){
+	Vertex v;
+	v.pos << j, 0.5, i;
+	v.norm << 0, -1, 0;
+	vs.push_back(v);
       }
-  for (int i = 0; i <= 1; i++)
-    for (int j = 0; j <= 1; j++)
-      if (
-	  m[j][0][i] & ~m[1 - j][0][i] & ~m[j][0][1 - i] &
-	  m[j][1][i] & ~m[1 - j][1][i] & ~m[j][1][1 - i]
-	  ){
-	glBegin(GL_QUADS);
-
-	glNormal3d(1 - j, 0, 0);
-	glVertex3d(0.5, 0, i);
-
-	glNormal3d(0, 0, 1 - i);
-	glVertex3d(j, 0, 0.5);
-
-	glNormal3d(0, 0, 1 - i);
-	glVertex3d(j, 1, 0.5);
-
-	glNormal3d(1 - j, 0, 0);
-	glVertex3d(0.5, 1, i);
-
-	glEnd();
+      if (m[i][j][0] & ~m[i][j][1]){
+	Vertex v;
+	v.pos << i, j, 0.5;
+	v.norm << 0, 0, 1;
+	vs.push_back(v);
+      }else if (~m[i][j][0] & m[i][j][1]){
+	Vertex v;
+	v.pos << i, j, 0.5;
+	v.norm << 0, 0, -1;
+	vs.push_back(v);
       }
-
-  for (int i = 0; i <= 1; i++)
-    if (
-	m[i][0][0] & ~m[1 - i][0][0] &
-	m[i][0][1] & ~m[1 - i][0][1] &
-	m[i][1][1] & ~m[1 - i][1][1] &
-	m[i][1][0] & ~m[1 - i][1][0]
-	){
-      glBegin(GL_QUADS);
-      glNormal3d(1 - i, 0, 0);
-      glVertex3d(0.5, 0, 0);
-      glVertex3d(0.5, 0, 1);
-      glVertex3d(0.5, 1, 1);
-      glVertex3d(0.5, 1, 0);
-      glEnd();
-    }
-  for (int i = 0; i <= 1; i++)
-    if (
-	m[0][i][0] & ~m[0][1 - i][0] &
-	m[1][i][0] & ~m[1][1 - i][0] &
-	m[1][i][1] & ~m[1][1 - i][1] &
-	m[0][i][1] & ~m[0][1 - i][1]
-	){
-      glBegin(GL_QUADS);
-      glNormal3d(0, 1 - i, 0);
-      glVertex3d(0, 0.5, 0);
-      glVertex3d(1, 0.5, 0);
-      glVertex3d(1, 0.5, 1);
-      glVertex3d(0, 0.5, 1);
-      glEnd();
-    }
-  for (int i = 0; i <= 1; i++)
-    if (
-	m[0][0][i] & ~m[0][0][1 - i] &
-	m[0][1][i] & ~m[0][1][1 - i] &
-	m[1][1][i] & ~m[1][1][1 - i] &
-	m[1][0][i] & ~m[1][0][1 - i]
-	){
-      glBegin(GL_QUADS);
-      glNormal3d(0, 0, 1 - i);
-      glVertex3d(0, 0, 0.5);
-      glVertex3d(0, 1, 0.5);
-      glVertex3d(1, 1, 0.5);
-      glVertex3d(1, 0, 0.5);
-      glEnd();
     }
 
-  for (int i = 0; i <= 1; i++)
-    for (int j = 0; j <= 1; j++)
-      for (int k = 0; k <= 1; k++)
-	if (
-	    m[i][j][k] & m[i][j][1 - k] & m[i][1 - j][k] &
-	    ~m[1 - i][j][k] & ~m[1 - i][j][1 - k] & ~m[1 - i][1 - j][k] &
-	    ~m[i][1 - j][1 - k]
-	    ){
-	  glBegin(GL_TRIANGLES);
-	  glNormal3d(1 - i, 0, 0);
-	  glVertex3d(0.5, j, k);
-	  glVertex3d(0.5, j, 1 - k);
-	  glVertex3d(0.5, 1 - j, k);
-	  glEnd();
-	  glBegin(GL_QUADS);
+  glBegin(GL_TRIANGLES);
+  for (auto v1 = vs.begin(); v1 != vs.end(); v1++)
+    for (auto v2 = v1 + 1; v2 != vs.end(); v2++)
+      for (auto v3 = v2 + 1; v3 != vs.end(); v3++){
+	glNormal3d(v1->norm(0), v1->norm(1), v1->norm(2));
+	glVertex3d(v1->pos(0), v1->pos(1), v1->pos(2));
 
-	  glNormal3d(1 - i, 0, 0);
-	  glVertex3d(0.5, j, 1 - k);
+	glNormal3d(v2->norm(0), v2->norm(1), v2->norm(2));
+	glVertex3d(v2->pos(0), v2->pos(1), v2->pos(2));
 
-	  glNormal3d(1 - i, 0, 0);
-	  glVertex3d(0.5, 1 - j, k);
-
-	  glNormal3d(0, 0, 1 - k);
-	  glVertex3d(i, 1 - j, 0.5);
-
-	  glNormal3d(0, 1 - j, 0);
-	  glVertex3d(i, 0.5, 1 - k);
-
-	  glEnd();
-	}
-  for (int i = 0; i <= 1; i++)
-    for (int j = 0; j <= 1; j++)
-      for (int k = 0; k <= 1; k++)
-	if (
-	    m[k][i][j] & m[1 - k][i][j] & m[k][i][1 - j] &
-	    ~m[k][1 - i][j] & ~m[1 - k][1 - i][j] & ~m[k][1 - i][1 - j] &
-	    ~m[1 - k][i][1 - j]
-	    ){
-	  glBegin(GL_TRIANGLES);
-	  glNormal3d(0, 1 - i, 0);
-	  glVertex3d(k, 0.5, j);
-	  glVertex3d(1 - k, 0.5, j);
-	  glVertex3d(k, 0.5, 1 - j);
-	  glEnd();
-	  glBegin(GL_QUADS);
-
-	  glNormal3d(0, 1 - i, 0);
-	  glVertex3d(1 - k, 0.5, j);
-
-	  glNormal3d(0, 1 - i, 0);
-	  glVertex3d(k, 0.5, 1 - j);
-
-	  glNormal3d(1 - k, 0, 0);
-	  glVertex3d(0.5, i, 1 - j);
-
-	  glNormal3d(0, 0, 1 - j);
-	  glVertex3d(1 - k, i, 0.5);
-
-	  glEnd();
-	}
-  for (int i = 0; i <= 1; i++)
-    for (int j = 0; j <= 1; j++)
-      for (int k = 0; k <= 1; k++)
-	if (
-	    m[j][k][i] & m[j][1 - k][i] & m[1 - j][k][i] &
-	    ~m[j][k][1 - i] & ~m[j][1 - k][1 - i] & ~m[1 - j][k][1 - i] &
-	    ~m[1 - j][1 - k][i]
-	    ){
-	  glBegin(GL_TRIANGLES);
-	  glNormal3d(0, 0, 1 - i);
-	  glVertex3d(j, k, 0.5);
-	  glVertex3d(j, 1 - k, 0.5);
-	  glVertex3d(1 - j, k, 0.5);
-	  glEnd();
-	  glBegin(GL_QUADS);
-
-	  glNormal3d(0, 0, 1 - i);
-	  glVertex3d(j, 1 - k, 0.5);
-
-	  glNormal3d(0, 0, 1 - i);
-	  glVertex3d(1 - j, k, 0.5);
-
-	  glNormal3d(0, 1 - k, 0);
-	  glVertex3d(1 - j, 0.5, i);
-
-	  glNormal3d(1 - j, 0, 0);
-	  glVertex3d(0.5, 1 - k, i);
-
-	  glEnd();
-	}
+	glNormal3d(v3->norm(0), v3->norm(1), v3->norm(2));
+	glVertex3d(v3->pos(0), v3->pos(1), v3->pos(2));
+      }
+  glEnd();
 }
