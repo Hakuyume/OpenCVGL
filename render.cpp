@@ -40,7 +40,7 @@ void render_particles(const Space& space)
 	  iter->second.m[1 - x][1 - y][1 - z] = true;
 	}
 
-  GLfloat facecolor[] = {0, 0, 1, 0.7};
+  GLfloat facecolor[] = {0.2, 0.2, 1, 1};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
   glPushMatrix();

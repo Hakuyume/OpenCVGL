@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
 
-  glClearColor(0, 0, 0, 0);
+  glClearColor(1, 1, 1, 0);
 
   glutDisplayFunc(&display);
   glutReshapeFunc(&reshape);
