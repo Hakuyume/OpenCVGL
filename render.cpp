@@ -1,12 +1,14 @@
 #include <GL/glut.h>
 #include "render.hpp"
 
-#define MC_SIZE 2
+#define MC_SIZE 1
+#define MC_NEIGHBOR 2
+#define MC_THRESHOLD 1
 
 class Cube
 {
 public:
-  bool m[2][2][2];
+  double q[2][2][2];
   Cube(void);
   void draw(void);
 };
@@ -16,7 +18,7 @@ Cube::Cube(void)
   for (int x = 0; x <= 1; x++)
     for (int y = 0; y <= 1; y++)
       for (int z = 0; z <= 1; z++)
-	m[x][y][z] = false;
+	q[x][y][z] = 0;
 }
 
 void render_particles(const Space& space)
@@ -24,23 +26,33 @@ void render_particles(const Space& space)
   std::map<Eigen::Vector3i, Cube, CompVector> cubes;
 
   for (auto& pt : space.particles)
-    for (int x = 0; x <= 1; x++)
-      for (int y = 0; y <= 1; y++)
-	for (int z = 0; z <= 1; z++){
+    for (int x = -MC_NEIGHBOR; x <= MC_NEIGHBOR; x++)
+      for (int y = -MC_NEIGHBOR; y <= MC_NEIGHBOR; y++)
+	for (int z = -MC_NEIGHBOR; z <= MC_NEIGHBOR; z++){
 	  Eigen::Vector3i p;
-	  p(0) = floor(pt.pos(0) / MC_SIZE) + x;
-	  p(1) = floor(pt.pos(1) / MC_SIZE) + y;
-	  p(2) = floor(pt.pos(2) / MC_SIZE) + z;
-
+	  p(0) = pt.pos(0) / MC_SIZE + x;
+	  p(1) = pt.pos(1) / MC_SIZE + y;
+	  p(2) = pt.pos(2) / MC_SIZE + z;
+	  
 	  auto iter = cubes.find(p);
 	  if (iter == cubes.end()){
 	    Cube c;
 	    iter = cubes.insert(iter, std::map<Eigen::Vector3i, Cube, CompVector>::value_type(p, c));
 	  }
-	  iter->second.m[1 - x][1 - y][1 - z] = true;
+
+	  for (int dx = 0; dx <= 1; dx++)
+	    for (int dy = 0; dy <= 1; dy++)
+	      for (int dz = 0; dz <= 1; dz++){
+		Eigen::Vector3d r = pt.pos;
+		r(0) -= (double)(p(0) + dx) * MC_SIZE;
+		r(1) -= (double)(p(1) + dy) * MC_SIZE;
+		r(2) -= (double)(p(2) + dz) * MC_SIZE;
+
+		iter->second.q[dx][dy][dz] += 1 / (r.norm() * r.norm());
+	      }
 	}
 
-  GLfloat facecolor[] = {0.2, 0.2, 1, 1};
+  GLfloat facecolor[] = {0.2, 0.2, 0.2, 0.2};
   glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
 
   glPushMatrix();
@@ -65,11 +77,15 @@ struct Vertex
 
 void Cube::draw(void)
 {
-  glutWireCube(1);
-
   glTranslated(-0.5, -0.5, -0.5);
 
   std::vector<Vertex> vs;
+
+  bool m[2][2][2];
+  for (int x = 0; x <= 1; x++)
+    for (int y = 0; y <= 1; y++)
+      for (int z = 0; z <= 1; z++)
+	m[x][y][z] = q[x][y][z] > MC_THRESHOLD;
 
   for (int i = 0; i <= 1; i++)
     for (int j = 0; j <= 1; j++){
