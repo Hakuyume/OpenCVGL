@@ -1,5 +1,6 @@
 #include <GL/glut.h>
 #include <cmath>
+#include <thread>
 #include "phys.hpp"
 #include "render.hpp"
 
@@ -91,9 +92,7 @@ void motion(int x, int y)
 
 void timer(int value)
 {
-  glutTimerFunc(INTERVAL * 1000, &timer, 0);
-
-  space.update_particles(INTERVAL);
+  glutTimerFunc(50, &timer, 0);
 
   glutPostRedisplay();
 }
@@ -125,9 +124,19 @@ int main(int argc, char *argv[])
 
   space.gravity << 0, -GRAVITY, 0;
 
+  bool simloop = true;
+  std::thread sim([&simloop]{
+      while(simloop){
+	space.update_particles(INTERVAL);
+      }
+    });
+
   glutPostRedisplay();
 
   glutMainLoop();
+
+  simloop = false;
+  sim.join();
 
   return 0;
 }
