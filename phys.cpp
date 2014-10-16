@@ -13,10 +13,10 @@ static const double SPH_EPSILON     = 0.00001;
 static const double SPH_EXTSTIFF    = 10000.0;
 static const double SPH_EXTDAMP     = 256.0;
 static const double SPH_PDIST       = pow(SPH_PMASS / SPH_RESTDENSITY, 1.0/3.0);
-static const Eigen::Vector3d MIN(0.0, 0.0, -10.0);
-static const Eigen::Vector3d MAX(20.0, 20.0, 10.0);
-static const Eigen::Vector3d INIT_MIN(0.0, 0.0, -10.0);
-static const Eigen::Vector3d INIT_MAX(10.0, 20.0, 10.0);
+static const Eigen::Vector3d MIN(-15, -15, -10);
+static const Eigen::Vector3d MAX(15, 15, 10);
+static const Eigen::Vector3d INIT_MIN(-10, -10.0, -5);
+static const Eigen::Vector3d INIT_MAX(10, 10, 5);
 
 bool CompVector::operator()(const Eigen::Vector3d& a, const Eigen::Vector3d& b)
 {

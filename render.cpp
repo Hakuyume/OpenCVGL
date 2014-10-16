@@ -1,8 +1,8 @@
 #include <GL/glut.h>
 #include "render.hpp"
 
-#define MC_SIZE 1
-#define MC_NEIGHBOR 2
+#define MC_SIZE 0.75
+#define MC_NEIGHBOR 3
 #define MC_THRESHOLD 1
 
 class Cube

@@ -34,7 +34,6 @@ void display(void)
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
   glPushMatrix();
-  glTranslated(-10, -10, 0);
   render_particles(space);
   glPopMatrix();
 
@@ -50,7 +49,7 @@ void reshape(int width, int height)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(30.0, (double)width / height, 0.1, 100);
+  gluPerspective(45.0, (double)width / height, 0.1, 100);
 
   glutPostRedisplay();
 }
