@@ -67,10 +67,16 @@ void Cube::draw(void)
       for (int z = 0; z <= 1; z++)
 	if (m[x][y][z] & ~m[x][y][1 - z] & ~m[x][1 - y][z] & ~m[1 - x][y][z]){
 	  glBegin(GL_TRIANGLES);
-	  glNormal3d(1 - x, 1 - y, 1 - z);
+
+	  glNormal3d(0, 0, 1 - z);
 	  glVertex3d(x, y, 0.5);
+
+	  glNormal3d(0, 1 - y, 0);
 	  glVertex3d(x, 0.5, z);
+
+	  glNormal3d(1 - x, 0, 0);
 	  glVertex3d(0.5, y, z);
+
 	  glEnd();
 	}
 
@@ -81,11 +87,19 @@ void Cube::draw(void)
 	  m[i][j][1] & ~m[i][1 - j][1] & ~m[1 - i][j][1]
 	  ){
 	glBegin(GL_QUADS);
-	glNormal3d(1 - i, 1 - j, 0);
+
+	glNormal3d(0, 1 - j, 0);
 	glVertex3d(i, 0.5, 0);
+
+	glNormal3d(1 - i, 0, 0);
 	glVertex3d(0.5, j, 0);
+
+	glNormal3d(1 - i, 0, 0);
 	glVertex3d(0.5, j, 1);
+
+	glNormal3d(0, 1 - j, 0);
 	glVertex3d(i, 0.5, 1);
+
 	glEnd();
       }
   for (int i = 0; i <= 1; i++)
@@ -95,11 +109,19 @@ void Cube::draw(void)
 	  m[1][i][j] & ~m[1][i][1 - j] & ~m[1][1 - i][j]
 	  ){
 	glBegin(GL_QUADS);
-	glNormal3d(0, 1 - i, 1 - j);
+
+	glNormal3d(0, 0, 1 - j);
 	glVertex3d(0, i, 0.5);
+
+	glNormal3d(0, 1 - i, 0);
 	glVertex3d(0, 0.5, j);
+
+	glNormal3d(0, 1 - i, 0);
 	glVertex3d(1, 0.5, j);
+
+	glNormal3d(0, 0, 1 - j);
 	glVertex3d(1, i, 0.5);
+
 	glEnd();
       }
   for (int i = 0; i <= 1; i++)
@@ -109,11 +131,19 @@ void Cube::draw(void)
 	  m[j][1][i] & ~m[1 - j][1][i] & ~m[j][1][1 - i]
 	  ){
 	glBegin(GL_QUADS);
-	glNormal3d(1 - j, 0, 1 - i);
+
+	glNormal3d(1 - j, 0, 0);
 	glVertex3d(0.5, 0, i);
+
+	glNormal3d(0, 0, 1 - i);
 	glVertex3d(j, 0, 0.5);
+
+	glNormal3d(0, 0, 1 - i);
 	glVertex3d(j, 1, 0.5);
+
+	glNormal3d(1 - j, 0, 0);
 	glVertex3d(0.5, 1, i);
+
 	glEnd();
       }
 
@@ -178,11 +208,19 @@ void Cube::draw(void)
 	  glVertex3d(0.5, 1 - j, k);
 	  glEnd();
 	  glBegin(GL_QUADS);
-	  glNormal3d(1 - i, 1 - j, 1 - k);
+
+	  glNormal3d(1 - i, 0, 0);
 	  glVertex3d(0.5, j, 1 - k);
+
+	  glNormal3d(1 - i, 0, 0);
 	  glVertex3d(0.5, 1 - j, k);
+
+	  glNormal3d(0, 0, 1 - k);
 	  glVertex3d(i, 1 - j, 0.5);
+
+	  glNormal3d(0, 1 - j, 0);
 	  glVertex3d(i, 0.5, 1 - k);
+
 	  glEnd();
 	}
   for (int i = 0; i <= 1; i++)
@@ -200,11 +238,19 @@ void Cube::draw(void)
 	  glVertex3d(k, 0.5, 1 - j);
 	  glEnd();
 	  glBegin(GL_QUADS);
-	  glNormal3d(1 - k, 1 - i, 1 - j);
+
+	  glNormal3d(0, 1 - i, 0);
 	  glVertex3d(1 - k, 0.5, j);
+
+	  glNormal3d(0, 1 - i, 0);
 	  glVertex3d(k, 0.5, 1 - j);
+
+	  glNormal3d(1 - k, 0, 0);
 	  glVertex3d(0.5, i, 1 - j);
+
+	  glNormal3d(0, 0, 1 - j);
 	  glVertex3d(1 - k, i, 0.5);
+
 	  glEnd();
 	}
   for (int i = 0; i <= 1; i++)
@@ -222,11 +268,19 @@ void Cube::draw(void)
 	  glVertex3d(1 - j, k, 0.5);
 	  glEnd();
 	  glBegin(GL_QUADS);
-	  glNormal3d(1 - j, 1 - k, 1 - i);
+
+	  glNormal3d(0, 0, 1 - i);
 	  glVertex3d(j, 1 - k, 0.5);
+
+	  glNormal3d(0, 0, 1 - i);
 	  glVertex3d(1 - j, k, 0.5);
+
+	  glNormal3d(0, 1 - k, 0);
 	  glVertex3d(1 - j, 0.5, i);
+
+	  glNormal3d(1 - j, 0, 0);
 	  glVertex3d(0.5, 1 - k, i);
+
 	  glEnd();
 	}
 }
