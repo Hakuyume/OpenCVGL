@@ -30,9 +30,9 @@ void render_particles(const Space& space)
       for (int y = -MC_NEIGHBOR; y <= MC_NEIGHBOR; y++)
 	for (int z = -MC_NEIGHBOR; z <= MC_NEIGHBOR; z++){
 	  Eigen::Vector3i p;
-	  p(0) = pt.pos(0) / MC_SIZE + x;
-	  p(1) = pt.pos(1) / MC_SIZE + y;
-	  p(2) = pt.pos(2) / MC_SIZE + z;
+	  p(0) = floor(pt.pos(0) / MC_SIZE + x);
+	  p(1) = floor(pt.pos(1) / MC_SIZE + y);
+	  p(2) = floor(pt.pos(2) / MC_SIZE + z);
 	  
 	  auto iter = cubes.find(p);
 	  if (iter == cubes.end()){
