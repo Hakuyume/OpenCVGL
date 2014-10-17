@@ -49,16 +49,12 @@ void reshape(int width, int height)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(45.0, (double)width / height, 0.1, 100);
-
-  glutPostRedisplay();
 }
 
 void keyboard(unsigned char key, int x, int y)
 {
   switch(key){
   }
-
-  glutPostRedisplay();
 }
 
 void mouse(int button, int state, int x, int y)
@@ -84,8 +80,6 @@ void motion(int x, int y)
 {
   if (left_button)
     space.gravity << x - mouse_x0, - ((y - mouse_y0) + GRAVITY), 0;
-
-  glutPostRedisplay();
 }
 
 void idle(void)
@@ -126,8 +120,6 @@ int main(int argc, char *argv[])
 	space.update_particles(0.004);
       }
     });
-
-  glutPostRedisplay();
 
   glutMainLoop();
 
