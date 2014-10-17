@@ -3,7 +3,7 @@
 
 #define MC_SIZE 0.75
 #define MC_NEIGHBOR 3
-#define MC_THRESHOLD 1
+#define MC_THRESHOLD 2
 
 class Cube
 {
@@ -48,7 +48,9 @@ void render_particles(const Space& space)
 		r(1) -= (double)(p(1) + dy) * MC_SIZE;
 		r(2) -= (double)(p(2) + dz) * MC_SIZE;
 
-		iter->second.q[dx][dy][dz] += 1 / (r.norm() * r.norm());
+		double c = MC_SIZE * MC_NEIGHBOR - r.norm();
+		if (c > 0)
+		  iter->second.q[dx][dy][dz] += c * c * c;
 	      }
 	}
 
