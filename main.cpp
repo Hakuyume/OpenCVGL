@@ -4,7 +4,6 @@
 #include "phys.hpp"
 #include "render.hpp"
 
-#define INTERVAL 0.004
 #define GRAVITY 9.8
 
 bool left_button = false;
@@ -89,10 +88,8 @@ void motion(int x, int y)
   glutPostRedisplay();
 }
 
-void timer(int value)
+void idle(void)
 {
-  glutTimerFunc(50, &timer, 0);
-
   glutPostRedisplay();
 }
 
@@ -117,7 +114,7 @@ int main(int argc, char *argv[])
   glutMouseFunc(&mouse);
   glutMotionFunc(&motion);
   glutPassiveMotionFunc(&motion);
-  glutTimerFunc(0, &timer, 0);
+  glutIdleFunc(&idle);
 
   space.put_particles();
 
@@ -126,7 +123,7 @@ int main(int argc, char *argv[])
   bool simloop = true;
   std::thread sim([&simloop]{
       while(simloop){
-	space.update_particles(INTERVAL);
+	space.update_particles(0.004);
       }
     });
 
