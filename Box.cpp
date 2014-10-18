@@ -1,11 +1,5 @@
-#if defined(WIN32)
-#  include "glut.h"
-#elif defined(__APPLE__) || defined(MACOSX)
-#  include <GLUT/glut.h>
-#else
-#  define GL_GLEXT_PROTOTYPES
-#  include <GL/glut.h>
-#endif
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glut.h>
 
 #include "Box.h"
 

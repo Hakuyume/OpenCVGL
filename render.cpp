@@ -208,8 +208,6 @@ void renderer_init(void)
   /* 設定対象を無名テクスチャに戻す */
   glBindTexture(GL_TEXTURE_2D, 0);
   
-  /* GLSL の初期化 */
-  if (glslInit()) exit(1);
 
   /* シェーダプログラムの作成 */
   shader0 = loadShader("replace.vert", "replace.frag");
