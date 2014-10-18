@@ -15,12 +15,12 @@ static GLint texture, cubemap;
 #define TEXHEIGHT 128                           /* テクスチャの高さ　　 */
 static GLuint texname[2];                       /* テクスチャ名（番号） */
 static const char *texfile[] = {                /* テクスチャファイル名 */
-  "room2ny.raw", /* 下 */
-  "room2nz.raw", /* 裏 */
-  "room2px.raw", /* 右 */
-  "room2pz.raw", /* 前 */
-  "room2nx.raw", /* 左 */
-  "room2py.raw", /* 上 */
+  "images/room2ny.raw", /* 下 */
+  "images/room2nz.raw", /* 裏 */
+  "images/room2px.raw", /* 右 */
+  "images/room2pz.raw", /* 前 */
+  "images/room2nx.raw", /* 左 */
+  "images/room2py.raw", /* 上 */
 };
 
 static const int target[] = {                /* テクスチャのターゲット名 */
@@ -191,8 +191,8 @@ void renderer_init(void)
   
 
   /* シェーダプログラムの作成 */
-  shader0 = loadShader("replace.vert", "replace.frag");
-  shader1 = loadShader("refract.vert", "refract.frag");
+  shader0 = loadShader("shaders/replace.vert", "shaders/replace.frag");
+  shader1 = loadShader("shaders/refract.vert", "shaders/refract.frag");
   
   /* uniform 変数の位置を取り出す */
   texture = glGetUniformLocation(shader0, "texture");
