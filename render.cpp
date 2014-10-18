@@ -32,7 +32,7 @@ void renderer_draw(const Space& space)
   glUniform1i(texture, 0);
 
   glPushMatrix();
-  glScaled(500, 500, 500);
+  glScaled(450, 450, 500);
   glTranslated(0, 0, -0.5);
 
   glBegin(GL_QUADS);
@@ -54,7 +54,7 @@ void renderer_draw(const Space& space)
   glUniform1i(cubemap, 0);
 
   glPushMatrix();
-  glTranslated(0, 0, -200);
+  glTranslated(0, 50, -200);
   glScaled(10, 10, 10);
   draw_particles(space.particles);
   glPopMatrix();
@@ -132,7 +132,7 @@ void renderer_init(void)
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
     }
 
-    cv::flip(image, image, 0);
+    cv::flip(image, image, 1);
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
     glTexImage2D(target[i], 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
