@@ -192,7 +192,7 @@ void renderer_init(void)
 
   /* シェーダプログラムの作成 */
   shader0 = loadShader("replace.vert", "replace.frag");
-  shader1 = loadShader("reflect.vert", "reflect.frag");
+  shader1 = loadShader("refract.vert", "refract.frag");
   
   /* uniform 変数の位置を取り出す */
   texture = glGetUniformLocation(shader0, "texture");
