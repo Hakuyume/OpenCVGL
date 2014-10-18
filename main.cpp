@@ -35,18 +35,18 @@ void reshape(int width, int height)
 
 void keyboard(unsigned char key, int x, int y)
 {
-  switch(key){
+  switch (key) {
   }
 }
 
 void mouse(int button, int state, int x, int y)
 {
-  switch(button){
+  switch (button) {
   case GLUT_LEFT_BUTTON:
-    switch(state){
+    switch (state) {
     case GLUT_UP:
       left_button = false;
-      space.gravity << 0, - GRAVITY, 0;
+      space.gravity << 0, -GRAVITY, 0;
       break;
     case GLUT_DOWN:
       left_button = true;
@@ -61,7 +61,7 @@ void mouse(int button, int state, int x, int y)
 void motion(int x, int y)
 {
   if (left_button)
-    space.gravity << x - mouse_x0, - ((y - mouse_y0) + GRAVITY), 0;
+    space.gravity << x - mouse_x0, -((y - mouse_y0) + GRAVITY), 0;
 }
 
 void idle(void)
@@ -92,11 +92,11 @@ int main(int argc, char *argv[])
   space.gravity << 0, -GRAVITY, 0;
 
   bool simloop = true;
-  std::thread sim([&simloop]{
-      while(simloop){
-	space.update_particles(0.004);
-      }
-    });
+  std::thread sim([&simloop] {
+    while (simloop) {
+      space.update_particles(0.004);
+    }
+  });
 
   glutMainLoop();
 

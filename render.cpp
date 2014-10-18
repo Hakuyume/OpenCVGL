@@ -13,19 +13,17 @@
 static GLuint shader0, shader1;
 static GLint texture, cubemap;
 
-static GLuint texname[2];                       /* テクスチャ名（番号） */
+static GLuint texname[2]; /* テクスチャ名（番号） */
 
-static const int target[] = {                /* テクスチャのターゲット名 */
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-};
+static const int target[] = { // テクスチャのターゲット名
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y};
 
-
-void renderer_draw(const Space& space)
+void renderer_draw(const Space &space)
 {
   glBindTexture(GL_TEXTURE_2D, texname[0]);
   glUseProgram(shader0);
@@ -48,7 +46,7 @@ void renderer_draw(const Space& space)
   glEnd();
 
   glPopMatrix();
- 
+
   glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
   glUseProgram(shader1);
   glUniform1i(cubemap, 0);
@@ -58,7 +56,7 @@ void renderer_draw(const Space& space)
   glScaled(10, 10, 10);
   draw_particles(space.particles);
   glPopMatrix();
-  
+
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -70,11 +68,13 @@ static GLuint loadShader(const char *vert, const char *frag)
   /* シェーダオブジェクトの作成 */
   GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
   GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  
+
   /* シェーダのソースプログラムの読み込み */
-  if (readShaderSource(vertShader, vert)) exit(1);
-  if (readShaderSource(fragShader, frag)) exit(1);
-  
+  if (readShaderSource(vertShader, vert))
+    exit(1);
+  if (readShaderSource(fragShader, frag))
+    exit(1);
+
   /* シェーダプログラムのコンパイル／リンク結果を得る変数 */
   GLint compiled, linked;
 
@@ -86,7 +86,7 @@ static GLuint loadShader(const char *vert, const char *frag)
     std::cerr << "Compile error in vertex shader." << std::endl;
     exit(1);
   }
-  
+
   /* フラグメントシェーダのソースプログラムのコンパイル */
   glCompileShader(fragShader);
   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compiled);
@@ -95,18 +95,18 @@ static GLuint loadShader(const char *vert, const char *frag)
     std::cerr << "Compile error in fragment shader." << std::endl;
     exit(1);
   }
-  
+
   /* プログラムオブジェクトの作成 */
   GLuint gl2Program = glCreateProgram();
-  
+
   /* シェーダオブジェクトのシェーダプログラムへの登録 */
   glAttachShader(gl2Program, vertShader);
   glAttachShader(gl2Program, fragShader);
-  
+
   /* シェーダオブジェクトの削除 */
   glDeleteShader(vertShader);
   glDeleteShader(fragShader);
-  
+
   /* シェーダプログラムのリンク */
   glLinkProgram(gl2Program);
   glGetProgramiv(gl2Program, GL_LINK_STATUS, &linked);
@@ -128,9 +128,9 @@ void renderer_init(void)
 
   glBindTexture(GL_TEXTURE_2D, texname[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
-    
+
   cv::flip(image, image, 1);
-  
+
   glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
   glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
@@ -139,7 +139,7 @@ void renderer_init(void)
     if (target[i] != GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
       glTexImage2D(target[i], 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
-  glBindTexture(GL_TEXTURE_2D, texname[0]);  
+  glBindTexture(GL_TEXTURE_2D, texname[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -150,7 +150,6 @@ void renderer_init(void)
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
 
   shader0 = loadShader("shaders/replace.vert", "shaders/replace.frag");
   shader1 = loadShader("shaders/refract.vert", "shaders/refract.frag");
