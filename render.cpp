@@ -7,12 +7,9 @@
 #include "render.hpp"
 #include "mc.hpp"
 #include "glsl.h"
-#include "Box.h"
 
 static GLuint shader0, shader1;
 static GLint texture, cubemap;
-
-static Box *box;
 
 #define TEXWIDTH  128                           /* テクスチャの幅　　　 */
 #define TEXHEIGHT 128                           /* テクスチャの高さ　　 */
@@ -38,50 +35,39 @@ static const int target[] = {                /* テクスチャのターゲッ�
 
 void renderer_draw(const Space& space)
 {
-  glBindTexture(GL_TEXTURE_2D, texname[0]);
-  
-  /* 箱のテクスチャのシェーダプログラムを適用する */
-  glUseProgram(shader0);
 
-  /* テクスチャユニット０を指定する */
+  glBindTexture(GL_TEXTURE_2D, texname[0]);
+  glUseProgram(shader0);
   glUniform1i(texture, 0);
 
-  /* 箱を描く */
   glPushMatrix();
-  //  glMultMatrixd(tb2->rotation());
-  box->draw();
+  glScaled(500, 500, 500);
+  glTranslated(0, 0, -0.5);
+
+  glBegin(GL_QUADS);
+  glNormal3d(0, 0, -1);
+  glTexCoord2d(1, 1);
+  glVertex3d(-0.5, -0.5, 0);
+  glTexCoord2d(1, 0);
+  glVertex3d(-0.5, +0.5, 0);
+  glTexCoord2d(0, 0);
+  glVertex3d(+0.5, +0.5, 0);
+  glTexCoord2d(0, 1);
+  glVertex3d(+0.5, -0.5, 0);
+  glEnd();
+
   glPopMatrix();
-
-  /* 設定対象をキューブマッピングのテクスチャに切り替える*/
+ 
   glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
-
-  /* キューブマッピングのシェーダプログラムを適用する */
   glUseProgram(shader1);
-
-  /* テクスチャユニット０を指定する */
   glUniform1i(cubemap, 0);
 
-  /* テクスチャ変換行列にトラックボール式の回転を加える */
-  glMatrixMode(GL_TEXTURE);
-  //  glLoadTransposeMatrixd(tb2->rotation());
-  glMatrixMode(GL_MODELVIEW);
-
-  /* 視点より少し奥にオブジェクトを描いてトラックボール式の回転を加える */
   glPushMatrix();
-  glTranslated(0.0, 0.0, -200.0);
-  //  glMultMatrixd(tb1->rotation());
+  glTranslated(0, 0, -200);
   glScaled(5, 5, 5);
-
   draw_particles(space.particles);
-
   glPopMatrix();
   
-  /* テクスチャ変換行列を元に戻す */
-  glMatrixMode(GL_TEXTURE);
-  glLoadIdentity();
-  glMatrixMode(GL_MODELVIEW);
-
-  /* 設定対象を無名テクスチャに戻す */
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -147,9 +133,6 @@ static GLuint loadShader(const char *vert, const char *frag)
 */
 void renderer_init(void)
 {
-  /* 箱のオブジェクトを生成 */
-  box = new Box(500.0f, 500.0f, 500.0f);
-
   /* テクスチャ名を２個生成 */
   glGenTextures(2, texname);
   
@@ -158,8 +141,7 @@ void renderer_init(void)
 
   /* 外側の立方体のテクスチャの割り当て（８枚分） */
   glBindTexture(GL_TEXTURE_2D, texname[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXWIDTH * 8, TEXHEIGHT, 0,
-    GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXWIDTH, TEXHEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   
   /* テクスチャ画像の読み込み */
   for (int i = 0; i < 6; ++i) {
@@ -173,13 +155,12 @@ void renderer_init(void)
       file.close();
 
       /* 外側の立方体のテクスチャの置き換え */
-      glTexSubImage2D(GL_TEXTURE_2D, 0, TEXWIDTH * i, 0, TEXWIDTH, TEXHEIGHT,
-        GL_RGBA, GL_UNSIGNED_BYTE, image);
+      if (target[i] == GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, TEXWIDTH, TEXHEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
       /* キューブマッピングのテクスチャの割り当て */
       glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
-      glTexImage2D(target[i], 0, GL_RGBA, TEXWIDTH, TEXHEIGHT, 0, 
-        GL_RGBA, GL_UNSIGNED_BYTE, image);
+      glTexImage2D(target[i], 0, GL_RGBA, TEXWIDTH, TEXHEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
       /* 設定対象を外側の立方体のテクスチャに戻す */
       glBindTexture(GL_TEXTURE_2D, texname[0]);
@@ -218,7 +199,7 @@ void renderer_init(void)
   cubemap = glGetUniformLocation(shader1, "cubemap");
 
   /* 初期設定 */
-  glClearColor(0.3, 0.3, 1.0, 0.0);
+  glClearColor(1, 1, 1, 0);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
 }
