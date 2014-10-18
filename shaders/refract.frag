@@ -1,10 +1,8 @@
-// refract.frag
-
 uniform samplerCube cubemap;
 
-varying vec3 r;  // 視線の反射ベクトル
-varying vec3 s;  // 視線の屈折ベクトル
-varying float t; // 境界面での反射率
+varying vec3 r;
+varying vec3 s;
+varying float t;
 
 void main(void)
 {
