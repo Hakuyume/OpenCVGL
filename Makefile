@@ -6,7 +6,7 @@ GL_FLAGS=`pkg-config gl glu --cflags`
 GL_LIBS=`pkg-config gl glu --libs` -lglut
 EIGEN_FLAGS=-I.
 
-$(TARGET): main.o phys.o render.o
+$(TARGET): main.o phys.o render.o glsl.o Box.o
 	$(CXX) $(CXX_FLAGS) $^ -o $@ $(GL_LIBS)
 
 %.o: %.cpp
@@ -14,7 +14,9 @@ $(TARGET): main.o phys.o render.o
 
 main.o: phys.hpp render.hpp
 phys.o: phys.hpp
-render.o: phys.hpp render.hpp
+render.o: phys.hpp render.hpp glsl.h Box.h
+glsl.o: glsl.h
+Box.o: Box.h
 
 .PHONY: clean
 clean:

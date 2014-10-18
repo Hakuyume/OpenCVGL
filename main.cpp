@@ -18,47 +18,8 @@ void display(void)
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(
-	    0, 0, r,
-	    0, 0, 0,
-	    0, 1, 0
-	    );
 
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-
-  GLfloat lightpos[] = {50, 50, 50, 0};
-  GLfloat diffuse[] = {10, 10, 10, 1};
-  glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-
-  glPushMatrix();
-  glTranslated(0, -15, 0);
-  glScaled(5, 5, 5);
-  for (int i = -3; i <= 3; i++)
-    for (int j = -3; j <= 3; j++){
-      glPushMatrix();
-      glTranslated(i, 0, j);
-      GLfloat facecolor[] = {0, 0, 0, 1};
-      facecolor[0] = abs(i + j) % 2;
-      glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
-      glBegin(GL_QUADS);
-      glNormal3d(0, 1, 0);
-      glVertex3d(-0.5, 0, -0.5);
-      glVertex3d(-0.5, 0, +0.5);
-      glVertex3d(+0.5, 0, +0.5);
-      glVertex3d(+0.5, 0, -0.5);
-      glEnd();
-      glPopMatrix();
-    }
-  glPopMatrix();
-
-  glPushMatrix();
   render_particles(space);
-  glPopMatrix();
-
-  glDisable(GL_LIGHT0);
-  glDisable(GL_LIGHTING);
 
   glutSwapBuffers();
 }
@@ -69,7 +30,7 @@ void reshape(int width, int height)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45.0, (double)width / height, 0.1, 100);
+  gluPerspective(60, (double)width / height, 100, 500);
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -116,13 +77,6 @@ int main(int argc, char *argv[])
   glutInitWindowSize(600, 600);
   glutCreateWindow("main");
 
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-
-  glClearColor(1, 1, 1, 0);
-
   glutDisplayFunc(&display);
   glutReshapeFunc(&reshape);
   glutKeyboardFunc(&keyboard);
@@ -130,6 +84,8 @@ int main(int argc, char *argv[])
   glutMotionFunc(&motion);
   glutPassiveMotionFunc(&motion);
   glutIdleFunc(&idle);
+
+  render_init();
 
   space.put_particles();
 
