@@ -1,21 +1,22 @@
+TARGET=main
+
 CXX_FLAGS=-Wall -O3 -std=c++11
 
 GL_FLAGS=`pkg-config gl glu --cflags`
 GL_LIBS=`pkg-config gl glu --libs` -lglut
 EIGEN_FLAGS=-Ieigen/
 
-main: main.o phys.o render.o
+$(TARGET): main.o phys.o render.o
 	$(CXX) $(CXX_FLAGS) $^ -o $@ $(GL_LIBS)
 
-main.o: main.cpp phys.hpp render.hpp
-	$(CXX) $(CXX_FLAGS) -c main.cpp $(GL_FLAGS) $(EIGEN_FLAGS)
+%.o: %.cpp
+	$(CXX) $(CXX_FLAGS) -c $< -o $@ $(GL_FLAGS) $(EIGEN_FLAGS)
 
-phys.o: phys.hpp phys.cpp
-	$(CXX) $(CXX_FLAGS) -c phys.cpp $(EIGEN_FLAGS)
+main.o: phys.hpp render.hpp
+phys.o: phys.hpp
+render.o: phys.hpp render.hpp
 
-render.o: phys.hpp render.hpp render.cpp
-	$(CXX) $(CXX_FLAGS) -c render.cpp $(GL_FLAGS) $(EIGEN_FLAGS)
-
+.PHONY: clean
 clean:
-	rm -f main
+	rm -f $(TARGET)
 	rm -f *.o
