@@ -123,20 +123,21 @@ void renderer_init(void)
 {
   glGenTextures(2, texname);
 
-  for (int i = 0; i < 6; i++){
-    cv::Mat image = cv::imread("bottom.jpg", 1);
-    cv::cvtColor(image, image, CV_BGR2RGB);
+  cv::Mat image = cv::imread("bottom.jpg", 1);
+  cv::cvtColor(image, image, CV_BGR2RGB);
+
+  glBindTexture(GL_TEXTURE_2D, texname[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
     
-    if (target[i] == GL_TEXTURE_CUBE_MAP_NEGATIVE_Z){
-      glBindTexture(GL_TEXTURE_2D, texname[0]);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
-    }
+  cv::flip(image, image, 1);
+  
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
-    cv::flip(image, image, 1);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
-    glTexImage2D(target[i], 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
-  }
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
+  for (int i = 0; i < 6; i++)
+    if (target[i] != GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
+      glTexImage2D(target[i], 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
   glBindTexture(GL_TEXTURE_2D, texname[0]);  
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
