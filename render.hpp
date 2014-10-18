@@ -2,4 +2,4 @@
 
 #include "phys.hpp"
 
-void render_particles(const Space& space);
+void render_particles(const Space &space);
