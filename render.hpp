@@ -2,5 +2,5 @@
 
 #include "phys.hpp"
 
-void render_init(void);
-void render_particles(const Space& space);
+void renderer_init(void);
+void renderer_draw(const Space& space);

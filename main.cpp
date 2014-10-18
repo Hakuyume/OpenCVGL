@@ -19,7 +19,7 @@ void display(void)
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  render_particles(space);
+  renderer_draw(space);
 
   glutSwapBuffers();
 }
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
   glutPassiveMotionFunc(&motion);
   glutIdleFunc(&idle);
 
-  render_init();
+  renderer_init();
 
   space.put_particles();
 
