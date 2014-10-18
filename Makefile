@@ -4,7 +4,7 @@ CXX_FLAGS=-Wall -O3 -std=c++11
 
 GL_FLAGS=`pkg-config gl glu --cflags`
 GL_LIBS=`pkg-config gl glu --libs` -lglut
-EIGEN_FLAGS=-Ieigen/
+EIGEN_FLAGS=-I.
 
 $(TARGET): main.o phys.o render.o
 	$(CXX) $(CXX_FLAGS) $^ -o $@ $(GL_LIBS)
