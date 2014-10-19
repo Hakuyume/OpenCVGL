@@ -8,7 +8,6 @@
 
 bool left_button = false;
 static int mouse_x0, mouse_y0;
-double r = 50;
 
 Space space;
 

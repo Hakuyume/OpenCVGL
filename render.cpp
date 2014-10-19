@@ -30,7 +30,7 @@ void renderer_draw(const Space &space)
   glUniform1i(texture, 0);
 
   glPushMatrix();
-  glScaled(450, 450, 500);
+  glScaled(500, 500, 500);
   glTranslated(0, 0, -0.5);
 
   glBegin(GL_QUADS);
@@ -53,7 +53,7 @@ void renderer_draw(const Space &space)
 
   glPushMatrix();
   glTranslated(0, 50, -200);
-  glScaled(10, 10, 10);
+  glScaled(10, 10, 5);
   draw_particles(space.particles);
   glPopMatrix();
 
