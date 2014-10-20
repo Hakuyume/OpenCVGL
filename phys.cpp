@@ -18,28 +18,6 @@ static const Eigen::Vector3d MAX(+15, +15, +10);
 static const Eigen::Vector3d INIT_MIN(-10, -10, -5);
 static const Eigen::Vector3d INIT_MAX(+10, +10, +5);
 
-bool CompVector::operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b)
-{
-  double d = KERNEL_SIZE / SPH_SIMSCALE;
-
-  for (int i = 0; i < 3; i++)
-    if (floor(a(i) / d) < floor(b(i) / d))
-      return true;
-    else if (floor(a(i) / d) > floor(b(i) / d))
-      return false;
-  return false;
-}
-
-bool CompVector::operator()(const Eigen::Vector3i &a, const Eigen::Vector3i &b)
-{
-  for (int i = 0; i < 3; i++)
-    if (a(i) < b(i))
-      return true;
-    else if (a(i) > b(i))
-      return false;
-  return false;
-}
-
 void Space::put_particles(void)
 {
   double d = SPH_PDIST / SPH_SIMSCALE * 0.95;
@@ -56,10 +34,10 @@ void Space::update_neighbor_map(void)
 {
   neighbor_map.clear();
   for (auto &pt : particles) {
-    auto iter = neighbor_map.find(pt.pos);
+    auto iter = neighbor_map.find(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE));
     if (iter == neighbor_map.end()) {
       std::list<Particle *> pts;
-      iter = neighbor_map.insert(iter, NeighborMap::value_type(pt.pos, pts));
+      iter = neighbor_map.insert(iter, NeighborMap::value_type(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE), pts));
     }
     iter->second.push_back(&pt);
   }
@@ -75,7 +53,7 @@ std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r)
       for (int z = -1; z <= 1; z++) {
         Eigen::Vector3d v(x, y, z);
 
-        auto iter = neighbor_map.find(r + v * d);
+        auto iter = neighbor_map.find((r + v * d) / (KERNEL_SIZE / SPH_SIMSCALE));
         if (iter != neighbor_map.end())
           for (auto &pt : iter->second)
             neighbors.push_back(pt);
