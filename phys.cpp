@@ -46,14 +46,13 @@ void Space::update_neighbor_map(void)
 std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r)
 {
   std::list<Particle *> neighbors;
-  double d = KERNEL_SIZE / SPH_SIMSCALE;
 
   for (int x = -1; x <= 1; x++)
     for (int y = -1; y <= 1; y++)
       for (int z = -1; z <= 1; z++) {
         Eigen::Vector3d v(x, y, z);
 
-        auto iter = neighbor_map.find((r + v * d) / (KERNEL_SIZE / SPH_SIMSCALE));
+        auto iter = neighbor_map.find(r / (KERNEL_SIZE / SPH_SIMSCALE) + v);
         if (iter != neighbor_map.end())
           for (auto &pt : iter->second)
             neighbors.push_back(pt);
