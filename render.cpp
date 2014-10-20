@@ -8,14 +8,13 @@
 #include <cmath>
 #include "render.hpp"
 #include "mc.hpp"
-#include "glsl.h"
 
-static GLuint shader0, shader1;
-static GLint texture, cubemap;
+static GLuint shader;
+static GLint cubemap;
 
-static GLuint texname[2]; /* テクスチャ名（番号） */
+static GLuint backtex, cubetex;
 
-static const int target[] = { // テクスチャのターゲット名
+static const int texture_cubes[] = {
     GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
     GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -25,9 +24,7 @@ static const int target[] = { // テクスチャのターゲット名
 
 void renderer_draw(const Space &space)
 {
-  glBindTexture(GL_TEXTURE_2D, texname[0]);
-  glUseProgram(shader0);
-  glUniform1i(texture, 0);
+  glBindTexture(GL_TEXTURE_2D, backtex);
 
   glPushMatrix();
   glScaled(500, 500, 500);
@@ -47,8 +44,8 @@ void renderer_draw(const Space &space)
 
   glPopMatrix();
 
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
-  glUseProgram(shader1);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
+  glUseProgram(shader);
   glUniform1i(cubemap, 0);
 
   glPushMatrix();
@@ -60,102 +57,98 @@ void renderer_draw(const Space &space)
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-/*
-** シェーダプログラムの作成
-*/
-static GLuint loadShader(const char *vert, const char *frag)
+int readShaderSource(GLuint shader, const char *file)
 {
-  /* シェーダオブジェクトの作成 */
-  GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-  GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  FILE *fp;
+  const GLchar *source;
+  GLsizei length;
+  int ret;
 
-  /* シェーダのソースプログラムの読み込み */
-  if (readShaderSource(vertShader, vert))
-    exit(1);
-  if (readShaderSource(fragShader, frag))
-    exit(1);
-
-  /* シェーダプログラムのコンパイル／リンク結果を得る変数 */
-  GLint compiled, linked;
-
-  /* バーテックスシェーダのソースプログラムのコンパイル */
-  glCompileShader(vertShader);
-  glGetShaderiv(vertShader, GL_COMPILE_STATUS, &compiled);
-  printShaderInfoLog(vertShader);
-  if (compiled == GL_FALSE) {
-    std::cerr << "Compile error in vertex shader." << std::endl;
-    exit(1);
+  fp = fopen(file, "rb");
+  if (fp == NULL) {
+    perror(file);
+    return -1;
   }
 
-  /* フラグメントシェーダのソースプログラムのコンパイル */
-  glCompileShader(fragShader);
-  glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compiled);
-  printShaderInfoLog(fragShader);
-  if (compiled == GL_FALSE) {
-    std::cerr << "Compile error in fragment shader." << std::endl;
+  /* ファイルの末尾に移動し現在位置（つまりファイルサイズ）を得る */
+  fseek(fp, 0L, SEEK_END);
+  length = ftell(fp);
+
+  source = (GLchar *)malloc(length);
+
+  fseek(fp, 0L, SEEK_SET);
+  ret = fread((void *)source, 1, length, fp) != (size_t)length;
+  fclose(fp);
+
+  glShaderSource(shader, 1, &source, &length);
+
+  free((void *)source);
+
+  return ret;
+}
+
+GLuint load_shader(const char *vert, const char *frag)
+{
+  GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
+  GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+
+  if (readShaderSource(vert_shader, vert))
     exit(1);
-  }
-
-  /* プログラムオブジェクトの作成 */
-  GLuint gl2Program = glCreateProgram();
-
-  /* シェーダオブジェクトのシェーダプログラムへの登録 */
-  glAttachShader(gl2Program, vertShader);
-  glAttachShader(gl2Program, fragShader);
-
-  /* シェーダオブジェクトの削除 */
-  glDeleteShader(vertShader);
-  glDeleteShader(fragShader);
-
-  /* シェーダプログラムのリンク */
-  glLinkProgram(gl2Program);
-  glGetProgramiv(gl2Program, GL_LINK_STATUS, &linked);
-  printProgramInfoLog(gl2Program);
-  if (linked == GL_FALSE) {
-    std::cerr << "Link error" << std::endl;
+  if (readShaderSource(frag_shader, frag))
     exit(1);
-  }
 
-  return gl2Program;
+  glCompileShader(vert_shader);
+  glCompileShader(frag_shader);
+
+  GLuint program = glCreateProgram();
+
+  glAttachShader(program, vert_shader);
+  glAttachShader(program, frag_shader);
+
+  glDeleteShader(vert_shader);
+  glDeleteShader(frag_shader);
+
+  glLinkProgram(program);
+
+  return program;
 }
 
 void renderer_init(void)
 {
-  glGenTextures(2, texname);
+  glGenTextures(1, &backtex);
+  glGenTextures(1, &cubetex);
 
   cv::Mat image = cv::imread("bottom.jpg", 1);
   cv::cvtColor(image, image, CV_BGR2RGB);
 
-  glBindTexture(GL_TEXTURE_2D, texname[0]);
+  glBindTexture(GL_TEXTURE_2D, backtex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
   cv::flip(image, image, 1);
 
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
   glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
   for (int i = 0; i < 6; i++)
-    if (target[i] != GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
-      glTexImage2D(target[i], 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
+    if (texture_cubes[i] != GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
+      glTexImage2D(texture_cubes[i], 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
-  glBindTexture(GL_TEXTURE_2D, texname[0]);
+  glBindTexture(GL_TEXTURE_2D, backtex);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texname[1]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  shader0 = loadShader("shaders/replace.vert", "shaders/replace.frag");
-  shader1 = loadShader("shaders/refract.vert", "shaders/refract.frag");
+  shader = load_shader("shaders/refract.vert", "shaders/refract.frag");
 
-  texture = glGetUniformLocation(shader0, "texture");
-  cubemap = glGetUniformLocation(shader1, "cubemap");
+  cubemap = glGetUniformLocation(shader, "cubemap");
 
   glClearColor(1, 1, 1, 0);
   glEnable(GL_DEPTH_TEST);
