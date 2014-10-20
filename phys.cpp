@@ -12,22 +12,16 @@ static const double SPH_RADIUS = 0.004;
 static const double SPH_EPSILON = 0.00001;
 static const double SPH_EXTSTIFF = 10000.0;
 static const double SPH_EXTDAMP = 256.0;
-static const double SPH_PDIST = pow(SPH_PMASS / SPH_RESTDENSITY, 1.0 / 3.0);
 static const Eigen::Vector3d MIN(-15, -15, -10);
 static const Eigen::Vector3d MAX(+15, +15, +10);
-static const Eigen::Vector3d INIT_MIN(-10, -10, -5);
-static const Eigen::Vector3d INIT_MAX(+10, +10, +5);
 
-void Space::put_particles(void)
+void Space::put_particles(size_t n)
 {
-  double d = SPH_PDIST / SPH_SIMSCALE * 0.95;
-  for (double x = INIT_MIN(0) + d; x <= INIT_MAX(0) - d; x += d)
-    for (double y = INIT_MIN(1) + d; y <= INIT_MAX(1) - d; y += d)
-      for (double z = INIT_MIN(2) + d; z <= INIT_MAX(2) - d; z += d) {
-        Particle p;
-        p.pos << x, y, z;
-        particles.push_back(p);
-      }
+  for (int i = 0; i < n; i++) {
+    Particle p;
+    p.pos = Eigen::Vector3d::Random() * pow(n * SPH_PMASS / SPH_RESTDENSITY, 1.0 / 3.0) / SPH_SIMSCALE;
+    particles.push_back(p);
+  }
 }
 
 void Space::update_neighbor_map(void)

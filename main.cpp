@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
   renderer_init();
 
-  space.put_particles();
+  space.put_particles(600);
 
   space.gravity << 0, -GRAVITY, 0;
 

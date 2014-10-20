@@ -36,7 +36,7 @@ private:
 public:
   std::vector<Particle> particles;
   Eigen::Vector3d gravity;
-  void put_particles(void);
+  void put_particles(size_t n);
   void update_particles(const double dt);
   std::list<Particle *> neighbor(const Eigen::Vector3d &r);
 };
