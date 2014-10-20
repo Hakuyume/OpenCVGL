@@ -19,7 +19,7 @@ void Space::put_particles(size_t n)
 {
   for (int i = 0; i < n; i++) {
     Particle p;
-    p.pos = Eigen::Vector3d::Random() * pow(n * SPH_PMASS / SPH_RESTDENSITY, 1.0 / 3.0) / SPH_SIMSCALE;
+    p.pos = Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE;
     particles.push_back(p);
   }
 }
