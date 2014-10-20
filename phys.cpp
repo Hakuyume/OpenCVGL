@@ -17,7 +17,7 @@ static const Eigen::Vector3d MAX(+15, +15, +10);
 
 void Space::put_particles(size_t n)
 {
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     Particle p;
     p.pos = Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE;
     particles.push_back(p);
