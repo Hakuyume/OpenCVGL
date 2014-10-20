@@ -4,12 +4,7 @@
 #include <vector>
 #include <map>
 #include <list>
-
-struct CompVector
-{
-  bool operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b);
-  bool operator()(const Eigen::Vector3i &a, const Eigen::Vector3i &b);
-};
+#include "comp.hpp"
 
 class Particle;
 class Space;
