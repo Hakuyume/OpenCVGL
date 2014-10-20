@@ -97,7 +97,7 @@ void renderer_init(void)
   glGenTextures(1, &backtex);
   glGenTextures(1, &cubetex);
 
-  cv::Mat image = cv::imread("bottom.jpg", 1);
+  cv::Mat image = cv::imread("back.jpg", 1);
   cv::cvtColor(image, image, CV_BGR2RGB);
 
   glBindTexture(GL_TEXTURE_2D, backtex);
