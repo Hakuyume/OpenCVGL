@@ -2,10 +2,7 @@
 #include <GL/glut.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <iostream>
 #include <fstream>
-#include <cstdlib>
-#include <cmath>
 #include "render.hpp"
 #include "mc.hpp"
 
@@ -57,34 +54,18 @@ void renderer_draw(const Space &space)
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int readShaderSource(GLuint shader, const char *file)
+void read_source(const GLuint shader, const char *file)
 {
-  FILE *fp;
-  const GLchar *source;
-  GLsizei length;
-  int ret;
+  std::ifstream ifs(file);
 
-  fp = fopen(file, "rb");
-  if (fp == NULL) {
-    perror(file);
-    return -1;
-  }
+  std::istreambuf_iterator<char> begin(ifs);
+  std::istreambuf_iterator<char> end;
+  std::string content(begin, end);
 
-  /* ファイルの末尾に移動し現在位置（つまりファイルサイズ）を得る */
-  fseek(fp, 0L, SEEK_END);
-  length = ftell(fp);
+  const char *c_content = content.c_str();
+  GLsizei length = content.length();
 
-  source = (GLchar *)malloc(length);
-
-  fseek(fp, 0L, SEEK_SET);
-  ret = fread((void *)source, 1, length, fp) != (size_t)length;
-  fclose(fp);
-
-  glShaderSource(shader, 1, &source, &length);
-
-  free((void *)source);
-
-  return ret;
+  glShaderSource(shader, 1, &c_content, &length);
 }
 
 GLuint load_shader(const char *vert, const char *frag)
@@ -92,10 +73,8 @@ GLuint load_shader(const char *vert, const char *frag)
   GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
   GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-  if (readShaderSource(vert_shader, vert))
-    exit(1);
-  if (readShaderSource(frag_shader, frag))
-    exit(1);
+  read_source(vert_shader, vert);
+  read_source(frag_shader, frag);
 
   glCompileShader(vert_shader);
   glCompileShader(frag_shader);
