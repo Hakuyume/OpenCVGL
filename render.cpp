@@ -108,6 +108,7 @@ void renderer_init(void)
   glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
   glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
 
+  image = cv::Scalar::all(0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
   for (int i = 0; i < 6; i++)
     if (texture_cubes[i] != GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
