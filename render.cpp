@@ -46,8 +46,8 @@ void renderer_draw(const Space &space)
   glUniform1i(cubemap, 0);
 
   glPushMatrix();
-  glTranslated(0, 50, -200);
-  glScaled(10, 10, 5);
+  glTranslated(0, 0, -200);
+  glScaled(5, 5, 10);
   draw_particles(space.particles);
   glPopMatrix();
 
@@ -97,8 +97,15 @@ void renderer_init(void)
   glGenTextures(1, &backtex);
   glGenTextures(1, &cubetex);
 
-  cv::Mat image = cv::imread("back.jpg", 1);
-  cv::resize(image, image, cv::Size(image.cols, image.cols));
+  cv::Mat image = cv::Mat::zeros(500, 500, CV_8UC3);
+
+  for (int x = 0; x < 50; x++)
+    for (int y = 0; y < 50; y++)
+      if ((x + y) % 2 == 0)
+        cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(100, 100, 100), -1, CV_AA);
+      else
+        cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(255, 255, 255), -1, CV_AA);
+
   cv::cvtColor(image, image, CV_BGR2RGB);
 
   glBindTexture(GL_TEXTURE_2D, backtex);
