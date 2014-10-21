@@ -54,16 +54,35 @@ std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r)
   return neighbors;
 }
 
-void Space::update_particles(const double dt)
+void Space::update_particles(Space &space, const size_t id)
 {
-  update_neighbor_map();
+  size_t threads = space.br.size();
 
-  for (auto &pt : particles)
-    pt.calc_amount(*this);
-  for (auto &pt : particles)
-    pt.calc_accel(*this);
-  for (auto &pt : particles)
-    pt.move(dt);
+  while (true) {
+    if (id == 0)
+      space.update_neighbor_map();
+    space.br.wait();
+
+    for (int i = id; i < space.particles.size(); i += threads)
+      space.particles.at(i).calc_amount(space);
+    space.br.wait();
+
+    for (int i = id; i < space.particles.size(); i += threads)
+      space.particles.at(i).calc_accel(space);
+    space.br.wait();
+
+    for (int i = id; i < space.particles.size(); i += threads)
+      space.particles.at(i).move(0.004);
+    space.br.wait();
+  }
+}
+
+void Space::start_simulate(std::vector<std::thread> &threads)
+{
+  br.size(threads.size());
+
+  for (size_t id = 0; id < threads.size(); id++)
+    threads.at(id) = std::thread(update_particles, std::ref(*this), id);
 }
 
 Particle::Particle(void)

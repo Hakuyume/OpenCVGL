@@ -1,6 +1,5 @@
 #include <GL/glut.h>
 #include <cmath>
-#include <thread>
 #include "phys.hpp"
 #include "render.hpp"
 
@@ -86,21 +85,13 @@ int main(int argc, char *argv[])
 
   renderer_init();
 
-  space.put_particles(600);
-
+  space.put_particles(1000);
   space.gravity << 0, -GRAVITY, 0;
 
-  bool simloop = true;
-  std::thread sim([&simloop] {
-    while (simloop) {
-      space.update_particles(0.004);
-    }
-  });
+  std::vector<std::thread> th(4);
+  space.start_simulate(th);
 
   glutMainLoop();
-
-  simloop = false;
-  sim.join();
 
   return 0;
 }
