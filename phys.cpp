@@ -44,7 +44,7 @@ std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r)
   for (int x = -1; x <= 1; x++)
     for (int y = -1; y <= 1; y++)
       for (int z = -1; z <= 1; z++) {
-        Eigen::Vector3d v{x, y, z};
+        Eigen::Vector3d v{(double)x, (double)y, (double)z};
 
         auto iter = neighbor_map.find(r / (KERNEL_SIZE / SPH_SIMSCALE) + v);
         if (iter != neighbor_map.end())
@@ -63,15 +63,15 @@ void Space::update_particles(Space &space, const size_t id)
       space.update_neighbor_map();
     space.br.wait();
 
-    for (int i = id; i < space.particles.size(); i += threads)
+    for (size_t i = id; i < space.particles.size(); i += threads)
       space.particles.at(i).calc_amount(space);
     space.br.wait();
 
-    for (int i = id; i < space.particles.size(); i += threads)
+    for (size_t i = id; i < space.particles.size(); i += threads)
       space.particles.at(i).calc_accel(space);
     space.br.wait();
 
-    for (int i = id; i < space.particles.size(); i += threads)
+    for (size_t i = id; i < space.particles.size(); i += threads)
       space.particles.at(i).move(0.004);
     space.br.wait();
   }
