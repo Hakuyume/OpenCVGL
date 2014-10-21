@@ -17,9 +17,9 @@ private:
   double rho, prs;
   Eigen::Vector3d vel, accel;
   std::list<Particle *> neighbors;
-  double poly6kern(const Eigen::Vector3d &r);
-  double lapkern(const Eigen::Vector3d &r);
-  Eigen::Vector3d spikykern_grad(const Eigen::Vector3d &r);
+  static double poly6kern(const Eigen::Vector3d &r);
+  static double lapkern(const Eigen::Vector3d &r);
+  static Eigen::Vector3d spikykern_grad(const Eigen::Vector3d &r);
 
 public:
   Eigen::Vector3d pos;
