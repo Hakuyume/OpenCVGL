@@ -12,8 +12,8 @@ static const double SPH_RADIUS = 0.004;
 static const double SPH_EPSILON = 0.00001;
 static const double SPH_EXTSTIFF = 10000.0;
 static const double SPH_EXTDAMP = 256.0;
-static const Eigen::Vector3d MIN(-15, -15, -10);
-static const Eigen::Vector3d MAX(+15, +15, +10);
+static const Eigen::Vector3d MIN{-15, -15, -10};
+static const Eigen::Vector3d MAX{+15, +15, +10};
 
 void Space::put_particles(size_t n)
 {
@@ -31,7 +31,7 @@ void Space::update_neighbor_map(void)
     auto iter = neighbor_map.find(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE));
     if (iter == neighbor_map.end()) {
       std::list<Particle *> pts;
-      iter = neighbor_map.insert(iter, NeighborMap::value_type(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE), pts));
+      iter = neighbor_map.insert(iter, NeighborMap::value_type{pt.pos / (KERNEL_SIZE / SPH_SIMSCALE), pts});
     }
     iter->second.push_back(&pt);
   }
@@ -44,7 +44,7 @@ std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r)
   for (int x = -1; x <= 1; x++)
     for (int y = -1; y <= 1; y++)
       for (int z = -1; z <= 1; z++) {
-        Eigen::Vector3d v(x, y, z);
+        Eigen::Vector3d v{x, y, z};
 
         auto iter = neighbor_map.find(r / (KERNEL_SIZE / SPH_SIMSCALE) + v);
         if (iter != neighbor_map.end())
@@ -82,12 +82,12 @@ void Space::start_simulate(std::vector<std::thread> &threads)
   br.size(threads.size());
 
   for (size_t id = 0; id < threads.size(); id++)
-    threads.at(id) = std::thread(update_particles, std::ref(*this), id);
+    threads.at(id) = std::thread{update_particles, std::ref(*this), id};
 }
 
 Particle::Particle(void)
+    : vel{Eigen::Vector3d::Zero()}
 {
-  vel = Eigen::Vector3d::Zero();
 }
 
 double Particle::poly6kern(const Eigen::Vector3d &r)
@@ -135,8 +135,8 @@ void Particle::calc_amount(Space &space)
 
 void Particle::calc_accel(Space &space)
 {
-  Eigen::Vector3d force_v(0, 0, 0);
-  Eigen::Vector3d force_p(0, 0, 0);
+  Eigen::Vector3d force_v{0, 0, 0};
+  Eigen::Vector3d force_p{0, 0, 0};
 
   for (auto &pt : space.neighbor(pos)) {
     if (pos == pt->pos)

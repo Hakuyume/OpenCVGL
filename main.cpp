@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   space.put_particles(1000);
   space.gravity << 0, -GRAVITY, 0;
 
-  std::vector<std::thread> threads(4);
+  std::vector<std::thread> threads{4};
   space.start_simulate(threads);
   for (auto &th : threads)
     th.detach();

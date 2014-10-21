@@ -19,11 +19,8 @@ public:
 };
 
 Cube::Cube(void)
+    : q{}
 {
-  for (int x = 0; x <= 1; x++)
-    for (int y = 0; y <= 1; y++)
-      for (int z = 0; z <= 1; z++)
-        q[x][y][z] = 0;
 }
 
 void Cube::draw(void)
@@ -107,7 +104,7 @@ void draw_particles(const std::vector<Particle> particles)
           auto iter = cubes.find(p);
           if (iter == cubes.end()) {
             Cube c;
-            iter = cubes.insert(iter, std::map<Eigen::Vector3i, Cube, CompVector>::value_type(p, c));
+            iter = cubes.insert(iter, std::map<Eigen::Vector3i, Cube, CompVector>::value_type{p, c});
           }
 
           for (int dx = 0; dx <= 1; dx++)

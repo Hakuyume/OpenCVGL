@@ -11,7 +11,7 @@ static GLint cubemap;
 
 static GLuint backtex, cubetex;
 
-static const int texture_cubes[] = {
+static const int texture_cubes[]{
     GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
     GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -56,11 +56,11 @@ void renderer_draw(const Space &space)
 
 void read_source(const GLuint shader, const char *file)
 {
-  std::ifstream ifs(file);
+  std::ifstream ifs{file};
 
-  std::istreambuf_iterator<char> begin(ifs);
+  std::istreambuf_iterator<char> begin{ifs};
   std::istreambuf_iterator<char> end;
-  std::string content(begin, end);
+  std::string content{begin, end};
 
   const char *c_content = content.c_str();
   GLsizei length = content.length();
@@ -102,9 +102,9 @@ void renderer_init(void)
   for (int x = 0; x < 50; x++)
     for (int y = 0; y < 50; y++)
       if ((x + y) % 2 == 0)
-        cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(150, 150, 150), -1, CV_AA);
+        cv::rectangle(image, cv::Point{x * 10, y * 10}, cv::Point{(x + 1) * 10, (y + 1) * 10}, cv::Scalar{150, 150, 150}, -1, CV_AA);
       else
-        cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(255, 255, 255), -1, CV_AA);
+        cv::rectangle(image, cv::Point{x * 10, y * 10}, cv::Point{(x + 1) * 10, (y + 1) * 10}, cv::Scalar{255, 255, 255}, -1, CV_AA);
 
   cv::cvtColor(image, image, CV_BGR2RGB);
 
