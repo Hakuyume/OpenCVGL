@@ -46,8 +46,8 @@ void renderer_draw(const Space &space)
   glUniform1i(cubemap, 0);
 
   glPushMatrix();
-  glTranslated(0, 0, -200);
-  glScaled(5, 5, 10);
+  glTranslated(0, 20, -100);
+  glScaled(5, 5, 5);
   draw_particles(space.particles);
   glPopMatrix();
 
@@ -102,7 +102,7 @@ void renderer_init(void)
   for (int x = 0; x < 50; x++)
     for (int y = 0; y < 50; y++)
       if ((x + y) % 2 == 0)
-        cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(100, 100, 100), -1, CV_AA);
+        cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(150, 150, 150), -1, CV_AA);
       else
         cv::rectangle(image, cv::Point(x * 10, y * 10), cv::Point((x + 1) * 10, (y + 1) * 10), cv::Scalar(255, 255, 255), -1, CV_AA);
 
