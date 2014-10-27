@@ -12,8 +12,8 @@ static const double SPH_RADIUS = 0.004;
 static const double SPH_EPSILON = 0.00001;
 static const double SPH_EXTSTIFF = 10000.0;
 static const double SPH_EXTDAMP = 256.0;
-static const Eigen::Vector3d MIN{-15, -15, -10};
-static const Eigen::Vector3d MAX{+15, +15, +10};
+static const Eigen::Vector3d MIN{-30, -30, -10};
+static const Eigen::Vector3d MAX{+30, +30, +10};
 
 std::vector<Eigen::Vector3d> Space::positions(void)
 {
@@ -189,4 +189,5 @@ void Particle::move(const double dt)
 {
   vel += accel * dt;
   pos += vel * dt / SPH_SIMSCALE;
+  pos(2) = 0;
 }

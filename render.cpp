@@ -46,8 +46,8 @@ void renderer_draw(Space &space)
   glUniform1i(cubemap, 0);
 
   glPushMatrix();
-  glTranslated(0, 20, -100);
-  glScaled(5, 5, 5);
+  glTranslated(0, 0, -100);
+  glScaled(2.5, 2.5, 5);
   draw_particles(space);
   glPopMatrix();
 
