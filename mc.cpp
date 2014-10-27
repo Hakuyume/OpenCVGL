@@ -88,9 +88,11 @@ void Cube::draw(void)
   glEnd();
 }
 
-void draw_particles(const Space &space)
+void draw_particles(Space &space)
 {
   std::map<Eigen::Vector3i, Cube, CompVector> cubes;
+
+  space.lock();
 
   for (auto &pt : space)
     for (int x = -MC_NEIGHBOR; x <= MC_NEIGHBOR; x++)
@@ -120,6 +122,8 @@ void draw_particles(const Space &space)
                   iter->second.q[dx][dy][dz] += c * c * c;
               }
         }
+
+  space.unlock();
 
   glPushMatrix();
   glScaled(MC_SIZE, MC_SIZE, MC_SIZE);

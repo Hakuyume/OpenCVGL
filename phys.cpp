@@ -25,6 +25,16 @@ std::vector<Eigen::Vector3d>::const_iterator Space::end(void) const
   return poses.end();
 }
 
+void Space::lock(void)
+{
+  mutex.lock();
+}
+
+void Space::unlock(void)
+{
+  mutex.unlock();
+}
+
 void Space::put_particle(const Eigen::Vector3d &pos)
 {
   Particle p;
@@ -40,6 +50,8 @@ void Space::put_particles(size_t n)
 
 void Space::update_neighbor_map(void)
 {
+  lock();
+
   neighbor_map.clear();
   poses.clear();
 
@@ -52,6 +64,8 @@ void Space::update_neighbor_map(void)
     iter->second.push_back(&pt);
     poses.push_back(pt.pos);
   }
+
+  unlock();
 }
 
 std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r) const

@@ -2,4 +2,4 @@
 
 #include "phys.hpp"
 
-void draw_particles(const Space &space);
+void draw_particles(Space &space);

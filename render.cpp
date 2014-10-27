@@ -19,7 +19,7 @@ static const int texture_cubes[]{
     GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
     GL_TEXTURE_CUBE_MAP_POSITIVE_Y};
 
-void renderer_draw(const Space &space)
+void renderer_draw(Space &space)
 {
   glBindTexture(GL_TEXTURE_2D, backtex);
 

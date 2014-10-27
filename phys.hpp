@@ -33,6 +33,7 @@ class Space
   typedef std::map<Eigen::Vector3d, std::list<Particle *>, CompVector> NeighborMap;
 
 private:
+  std::mutex mutex;
   Barrier br;
   NeighborMap neighbor_map;
   void update_neighbor_map(void);
@@ -44,6 +45,8 @@ public:
   Eigen::Vector3d gravity;
   std::vector<Eigen::Vector3d>::const_iterator begin(void) const;
   std::vector<Eigen::Vector3d>::const_iterator end(void) const;
+  void lock(void);
+  void unlock(void);
   void put_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);
   std::list<Particle *> neighbor(const Eigen::Vector3d &r) const;
