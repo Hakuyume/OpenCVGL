@@ -37,7 +37,7 @@ void Space::update_neighbor_map(void)
   }
 }
 
-std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r)
+std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r) const
 {
   std::list<Particle *> neighbors;
 

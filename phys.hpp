@@ -41,6 +41,6 @@ public:
   std::vector<Particle> particles;
   Eigen::Vector3d gravity;
   void put_particles(size_t n);
-  std::list<Particle *> neighbor(const Eigen::Vector3d &r);
+  std::list<Particle *> neighbor(const Eigen::Vector3d &r) const;
   void start_simulate(std::vector<std::thread> &threads);
 };

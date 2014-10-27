@@ -1,6 +1,6 @@
 #include "comp.hpp"
 
-bool CompVector::operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b)
+bool CompVector::operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b) const
 {
   for (int i = 0; i < 3; i++)
     if (floor(a(i)) < floor(b(i)))
@@ -10,7 +10,7 @@ bool CompVector::operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b)
   return false;
 }
 
-bool CompVector::operator()(const Eigen::Vector3i &a, const Eigen::Vector3i &b)
+bool CompVector::operator()(const Eigen::Vector3i &a, const Eigen::Vector3i &b) const
 {
   for (int i = 0; i < 3; i++)
     if (a(i) < b(i))
