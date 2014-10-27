@@ -1,6 +1,8 @@
 #include "phys.hpp"
 #include <cmath>
+#include <chrono>
 
+static const double DT_MAX = 0.004;
 static const double SPH_RESTDENSITY = 600.0;
 static const double SPH_INTSTIFF = 3.0;
 static const double SPH_PMASS = 0.00020543;
@@ -79,6 +81,8 @@ void Space::update_particles(Space &space, const size_t id)
 {
   size_t threads = space.br.size();
 
+  auto start = std::chrono::high_resolution_clock::now();
+
   while (true) {
     if (id == 0)
       space.update_neighbor_map();
@@ -92,8 +96,12 @@ void Space::update_particles(Space &space, const size_t id)
       space.particles.at(i).calc_accel(space);
     space.br.wait();
 
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> dt = end - start;
+    start = end;
+
     for (size_t i = id; i < space.particles.size(); i += threads)
-      space.particles.at(i).move(0.004);
+      space.particles.at(i).move(dt.count() < DT_MAX ? dt.count() : DT_MAX);
     space.br.wait();
   }
 }
