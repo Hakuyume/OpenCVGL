@@ -15,13 +15,17 @@ static const double SPH_EXTDAMP = 256.0;
 static const Eigen::Vector3d MIN{-15, -15, -10};
 static const Eigen::Vector3d MAX{+15, +15, +10};
 
+void Space::put_particle(const Eigen::Vector3d &pos)
+{
+  Particle p;
+  p.pos = pos;
+  particles.push_back(p);
+}
+
 void Space::put_particles(size_t n)
 {
-  for (size_t i = 0; i < n; i++) {
-    Particle p;
-    p.pos = Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE;
-    particles.push_back(p);
-  }
+  for (size_t i = 0; i < n; i++)
+    put_particle(Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE);
 }
 
 void Space::update_neighbor_map(void)
