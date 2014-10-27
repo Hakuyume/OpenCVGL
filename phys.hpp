@@ -16,6 +16,7 @@ class Particle
 private:
   double rho, prs;
   Eigen::Vector3d vel, accel;
+  std::list<Particle *> neighbors;
   static double poly6kern(const Eigen::Vector3d &r);
   static double lapkern(const Eigen::Vector3d &r);
   static Eigen::Vector3d spikykern_grad(const Eigen::Vector3d &r);
@@ -43,12 +44,9 @@ private:
 
 public:
   Eigen::Vector3d gravity;
-  std::vector<Eigen::Vector3d>::const_iterator begin(void) const;
-  std::vector<Eigen::Vector3d>::const_iterator end(void) const;
-  void lock(void);
-  void unlock(void);
+  std::vector<Eigen::Vector3d> positions(void);
   void put_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);
-  std::list<Particle *> neighbor(const Eigen::Vector3d &r) const;
+  void neighbor(const Eigen::Vector3d &r, std::list<Particle *> &neigbors) const;
   void start_simulate(std::vector<std::thread> &threads);
 };

@@ -92,9 +92,9 @@ void draw_particles(Space &space)
 {
   std::map<Eigen::Vector3i, Cube, CompVector> cubes;
 
-  space.lock();
+  std::vector<Eigen::Vector3d> positions{space.positions()};
 
-  for (auto &pt : space)
+  for (auto &pt : positions)
     for (int x = -MC_NEIGHBOR; x <= MC_NEIGHBOR; x++)
       for (int y = -MC_NEIGHBOR; y <= MC_NEIGHBOR; y++)
         for (int z = -MC_NEIGHBOR; z <= MC_NEIGHBOR; z++) {
@@ -122,8 +122,6 @@ void draw_particles(Space &space)
                   iter->second.q[dx][dy][dz] += c * c * c;
               }
         }
-
-  space.unlock();
 
   glPushMatrix();
   glScaled(MC_SIZE, MC_SIZE, MC_SIZE);

@@ -15,24 +15,10 @@ static const double SPH_EXTDAMP = 256.0;
 static const Eigen::Vector3d MIN{-15, -15, -10};
 static const Eigen::Vector3d MAX{+15, +15, +10};
 
-std::vector<Eigen::Vector3d>::const_iterator Space::begin(void) const
+std::vector<Eigen::Vector3d> Space::positions(void)
 {
-  return poses.begin();
-}
-
-std::vector<Eigen::Vector3d>::const_iterator Space::end(void) const
-{
-  return poses.end();
-}
-
-void Space::lock(void)
-{
-  mutex.lock();
-}
-
-void Space::unlock(void)
-{
-  mutex.unlock();
+  std::lock_guard<std::mutex> lock{mutex};
+  return poses;
 }
 
 void Space::put_particle(const Eigen::Vector3d &pos)
@@ -50,7 +36,7 @@ void Space::put_particles(size_t n)
 
 void Space::update_neighbor_map(void)
 {
-  lock();
+  mutex.lock();
 
   neighbor_map.clear();
   poses.clear();
@@ -65,13 +51,12 @@ void Space::update_neighbor_map(void)
     poses.push_back(pt.pos);
   }
 
-  unlock();
+  mutex.unlock();
 }
 
-std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r) const
+void Space::neighbor(const Eigen::Vector3d &r, std::list<Particle *> &neighbors) const
 {
-  std::list<Particle *> neighbors;
-
+  neighbors.clear();
   for (int x = -1; x <= 1; x++)
     for (int y = -1; y <= 1; y++)
       for (int z = -1; z <= 1; z++) {
@@ -82,7 +67,6 @@ std::list<Particle *> Space::neighbor(const Eigen::Vector3d &r) const
           for (auto &pt : iter->second)
             neighbors.push_back(pt);
       }
-  return neighbors;
 }
 
 void Space::update_particles(Space &space, const size_t id)
@@ -157,8 +141,10 @@ Eigen::Vector3d Particle::spikykern_grad(const Eigen::Vector3d &r)
 
 void Particle::calc_amount(Space &space)
 {
+  space.neighbor(pos, neighbors);
+
   rho = 0;
-  for (auto &pt : space.neighbor(pos))
+  for (auto &pt : neighbors)
     rho += SPH_PMASS * poly6kern(pt->pos - pos);
 
   prs = (rho - SPH_RESTDENSITY) * SPH_INTSTIFF;
@@ -169,7 +155,7 @@ void Particle::calc_accel(Space &space)
   Eigen::Vector3d force_v{0, 0, 0};
   Eigen::Vector3d force_p{0, 0, 0};
 
-  for (auto &pt : space.neighbor(pos)) {
+  for (auto &pt : neighbors) {
     if (pos == pt->pos)
       continue;
     force_v += (pt->vel - vel) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
