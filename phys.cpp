@@ -21,22 +21,28 @@ std::vector<Eigen::Vector3d> Space::positions(void)
   return poses;
 }
 
-void Space::put_particle(const Eigen::Vector3d &pos)
+void Space::add_particle(const Eigen::Vector3d &pos)
 {
   Particle p;
   p.pos = pos;
-  particles.push_back(p);
+
+  mutex.lock();
+  add_queue.push_back(p);
+  mutex.unlock();
 }
 
 void Space::put_particles(size_t n)
 {
   for (size_t i = 0; i < n; i++)
-    put_particle(Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE);
+    add_particle(Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE);
 }
 
 void Space::update_neighbor_map(void)
 {
   mutex.lock();
+
+  particles.insert(particles.end(), add_queue.begin(), add_queue.end());
+  add_queue.clear();
 
   neighbor_map.clear();
   poses.clear();

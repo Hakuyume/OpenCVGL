@@ -40,12 +40,13 @@ private:
   void update_neighbor_map(void);
   std::vector<Particle> particles;
   std::vector<Eigen::Vector3d> poses;
+  std::vector<Particle> add_queue;
   static void update_particles(Space &space, const size_t id);
 
 public:
   Eigen::Vector3d gravity;
   std::vector<Eigen::Vector3d> positions(void);
-  void put_particle(const Eigen::Vector3d &pos);
+  void add_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);
   void neighbor(const Eigen::Vector3d &r, std::list<Particle *> &neigbors) const;
   void start_simulate(std::vector<std::thread> &threads);
