@@ -15,14 +15,14 @@ static const double SPH_EXTDAMP = 256.0;
 static const Eigen::Vector3d MIN{-15, -15, -10};
 static const Eigen::Vector3d MAX{+15, +15, +10};
 
-std::vector<Particle>::const_iterator Space::begin(void) const
+std::vector<Eigen::Vector3d>::const_iterator Space::begin(void) const
 {
-  return particles.begin();
+  return poses.begin();
 }
 
-std::vector<Particle>::const_iterator Space::end(void) const
+std::vector<Eigen::Vector3d>::const_iterator Space::end(void) const
 {
-  return particles.end();
+  return poses.end();
 }
 
 void Space::put_particle(const Eigen::Vector3d &pos)
@@ -41,6 +41,8 @@ void Space::put_particles(size_t n)
 void Space::update_neighbor_map(void)
 {
   neighbor_map.clear();
+  poses.clear();
+
   for (auto &pt : particles) {
     auto iter = neighbor_map.find(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE));
     if (iter == neighbor_map.end()) {
@@ -48,6 +50,7 @@ void Space::update_neighbor_map(void)
       iter = neighbor_map.insert(iter, NeighborMap::value_type{pt.pos / (KERNEL_SIZE / SPH_SIMSCALE), pts});
     }
     iter->second.push_back(&pt);
+    poses.push_back(pt.pos);
   }
 }
 

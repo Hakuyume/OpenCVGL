@@ -37,12 +37,13 @@ private:
   NeighborMap neighbor_map;
   void update_neighbor_map(void);
   std::vector<Particle> particles;
+  std::vector<Eigen::Vector3d> poses;
   static void update_particles(Space &space, const size_t id);
 
 public:
   Eigen::Vector3d gravity;
-  std::vector<Particle>::const_iterator begin(void) const;
-  std::vector<Particle>::const_iterator end(void) const;
+  std::vector<Eigen::Vector3d>::const_iterator begin(void) const;
+  std::vector<Eigen::Vector3d>::const_iterator end(void) const;
   void put_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);
   std::list<Particle *> neighbor(const Eigen::Vector3d &r) const;
