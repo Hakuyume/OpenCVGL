@@ -15,6 +15,16 @@ static const double SPH_EXTDAMP = 256.0;
 static const Eigen::Vector3d MIN{-15, -15, -10};
 static const Eigen::Vector3d MAX{+15, +15, +10};
 
+std::vector<Particle>::const_iterator Space::begin(void) const
+{
+  return particles.begin();
+}
+
+std::vector<Particle>::const_iterator Space::end(void) const
+{
+  return particles.end();
+}
+
 void Space::put_particle(const Eigen::Vector3d &pos)
 {
   Particle p;

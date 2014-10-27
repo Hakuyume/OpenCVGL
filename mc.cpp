@@ -88,11 +88,11 @@ void Cube::draw(void)
   glEnd();
 }
 
-void draw_particles(const std::vector<Particle> particles)
+void draw_particles(const Space &space)
 {
   std::map<Eigen::Vector3i, Cube, CompVector> cubes;
 
-  for (auto &pt : particles)
+  for (auto &pt : space)
     for (int x = -MC_NEIGHBOR; x <= MC_NEIGHBOR; x++)
       for (int y = -MC_NEIGHBOR; y <= MC_NEIGHBOR; y++)
         for (int z = -MC_NEIGHBOR; z <= MC_NEIGHBOR; z++) {

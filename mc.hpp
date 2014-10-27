@@ -2,4 +2,4 @@
 
 #include "phys.hpp"
 
-void draw_particles(const std::vector<Particle> particles);
+void draw_particles(const Space &space);

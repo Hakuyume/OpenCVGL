@@ -48,7 +48,7 @@ void renderer_draw(const Space &space)
   glPushMatrix();
   glTranslated(0, 20, -100);
   glScaled(5, 5, 5);
-  draw_particles(space.particles);
+  draw_particles(space);
   glPopMatrix();
 
   glBindTexture(GL_TEXTURE_2D, 0);
