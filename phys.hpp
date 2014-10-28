@@ -22,6 +22,7 @@ private:
   static Eigen::Vector3d spikykern_grad(const Eigen::Vector3d &r);
 
 public:
+  bool alive;
   Eigen::Vector3d pos;
   Particle(void);
   void calc_amount(Space &space);
@@ -41,12 +42,15 @@ private:
   std::vector<Particle> particles;
   std::vector<Eigen::Vector3d> poses;
   std::vector<Particle> add_queue;
+  bool rm;
+  Eigen::Vector3d rm_pos;
   static void update_particles(Space &space, const size_t id);
 
 public:
   Eigen::Vector3d size, gravity;
   std::vector<Eigen::Vector3d> positions(void);
   void add_particle(const Eigen::Vector3d &pos);
+  void remove_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);
   void neighbor(const Eigen::Vector3d &r, std::list<Particle *> &neigbors) const;
   void start_simulate(std::vector<std::thread> &threads);
