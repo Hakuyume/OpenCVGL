@@ -51,17 +51,11 @@ void renderer_draw(const int width, const int height, Space &space)
 
   glPopMatrix();
 
-  glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
-  glUseProgram(shader);
-  glUniform1i(cubemap, 0);
-
   glPushMatrix();
   glTranslated(0, 0, -sqrt(3) * 100);
   glScaled(100.0 / space.size(0), 100.0 / space.size(1), 100.0 / space.size(2));
   draw_particles(space);
   glPopMatrix();
-
-  glBindTexture(GL_TEXTURE_2D, 0);
 
   glutSwapBuffers();
 }
@@ -153,4 +147,8 @@ void renderer_init(void)
   glClearColor(1, 1, 1, 0);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
+
+  glBindTexture(GL_TEXTURE_CUBE_MAP, cubetex);
+  glUseProgram(shader);
+  glUniform1i(cubemap, 0);
 }
