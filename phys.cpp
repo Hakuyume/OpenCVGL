@@ -33,6 +33,14 @@ void Space::add_particle(const Eigen::Vector3d &pos)
   mutex.unlock();
 }
 
+void Space::remove_particle(const Eigen::Vector3d &pos)
+{
+  mutex.lock();
+  rm = true;
+  rm_pos = pos;
+  mutex.unlock();
+}
+
 void Space::put_particles(size_t n)
 {
   for (size_t i = 0; i < n; i++)
@@ -50,6 +58,10 @@ void Space::update_neighbor_map(void)
   poses.clear();
 
   for (auto &pt : particles) {
+    if (rm && (pt.pos - rm_pos).norm() < KERNEL_SIZE / SPH_SIMSCALE)
+      pt.alive = false;
+    if (!pt.alive)
+      continue;
     auto iter = neighbor_map.find(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE));
     if (iter == neighbor_map.end()) {
       std::list<Particle *> pts;
@@ -58,6 +70,8 @@ void Space::update_neighbor_map(void)
     iter->second.push_back(&pt);
     poses.push_back(pt.pos);
   }
+
+  rm = false;
 
   mutex.unlock();
 }
@@ -117,6 +131,7 @@ void Space::start_simulate(std::vector<std::thread> &threads)
 Particle::Particle(void)
     : vel{Eigen::Vector3d::Zero()}
 {
+  alive = true;
 }
 
 double Particle::poly6kern(const Eigen::Vector3d &r)
