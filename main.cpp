@@ -12,6 +12,14 @@ double height = 600;
 
 Space space;
 
+Eigen::Vector3d conv_pos(int x, int y)
+{
+  return Eigen::Vector3d(
+      (((double)x * 2 / width) - 1) * space.size(0) * (double)width / height,
+      -(((double)y * 2 / height) - 1) * space.size(1),
+      0);
+}
+
 void display(void)
 {
   renderer_draw(width, height, space);
@@ -27,10 +35,11 @@ void keyboard(unsigned char key, int x, int y)
 {
   switch (key) {
   case 'a':
-    space.add_particle(Eigen::Vector3d(
-        (((double)x * 2 / width) - 1) * space.size(0) * (double)width / height,
-        -(((double)y * 2 / height) - 1) * space.size(1),
-        0));
+    space.add_particle(conv_pos(x, y));
+    break;
+  case 'd':
+    space.remove_particle(conv_pos(x, y));
+    break;
   }
 }
 
