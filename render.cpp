@@ -38,6 +38,7 @@ void renderer_draw(const int width, const int height, Space &space)
   glTranslated(0, 0, -1);
 
   glBegin(GL_QUADS);
+  glColor3d(1, 1, 1);
   glNormal3d(0, 0, -1);
   glTexCoord2d(0, 1);
   glVertex3d(-0.5, -0.5, 0);

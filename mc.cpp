@@ -76,6 +76,7 @@ void Cube::draw(void)
   for (auto v1 = vs.begin(); v1 != vs.end(); v1++)
     for (auto v2 = v1 + 1; v2 != vs.end(); v2++)
       for (auto v3 = v2 + 1; v3 != vs.end(); v3++) {
+        glColor3d(0.9, 0.9, 1);
         glNormal3d(v1->norm(0), v1->norm(1), v1->norm(2));
         glVertex3d(v1->pos(0), v1->pos(1), v1->pos(2));
 

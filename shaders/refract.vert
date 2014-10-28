@@ -1,5 +1,6 @@
 varying vec3 r;
 varying vec3 s;
+varying vec3 c;
 varying float t;
 
 const float eta = 0.67;
@@ -14,4 +15,7 @@ void main(void)
   s = vec3(gl_TextureMatrix[0] * vec4(refract(v, n, eta), 1.0));
   t = f + (1.0 - f) * pow(1.0 - dot(-v, n), 5.0);
   gl_Position = ftransform();
+  c[0] = gl_Color[0];
+  c[1] = gl_Color[1];
+  c[2] = gl_Color[2];
 }
