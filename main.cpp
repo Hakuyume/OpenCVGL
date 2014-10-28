@@ -6,34 +6,31 @@
 #define GRAVITY 9.8
 
 bool left_button = false;
-static int mouse_x0, mouse_y0;
+int mouse_x0, mouse_y0;
+double width = 600;
+double height = 600;
 
 Space space;
 
 void display(void)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  renderer_draw(space);
-
-  glutSwapBuffers();
+  renderer_draw(width, height, space);
 }
 
-void reshape(int width, int height)
+void reshape(int w, int h)
 {
-  glViewport(0, 0, width, height);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(60, (double)width / height, 100, 500);
+  width = w;
+  height = h;
 }
 
 void keyboard(unsigned char key, int x, int y)
 {
   switch (key) {
+  case 'a':
+    space.add_particle(Eigen::Vector3d(
+        (((double)x * 2 / width) - 1) * space.size(0),
+        -(((double)y * 2 / height) - 1) * space.size(1),
+        0));
   }
 }
 
@@ -59,7 +56,7 @@ void mouse(int button, int state, int x, int y)
 void motion(int x, int y)
 {
   if (left_button)
-    space.gravity << x - mouse_x0, -((y - mouse_y0) + GRAVITY), 0;
+    space.gravity << (double)(x - mouse_x0) / width * GRAVITY, -(1 + (double)(y - mouse_y0) / height) * GRAVITY, 0;
 }
 
 void idle(void)
@@ -72,7 +69,7 @@ int main(int argc, char *argv[])
   glutInit(&argc, argv);
 
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-  glutInitWindowSize(600, 600);
+  glutInitWindowSize(width, height);
   glutCreateWindow("main");
 
   glutDisplayFunc(&display);
@@ -85,7 +82,8 @@ int main(int argc, char *argv[])
 
   renderer_init();
 
-  space.put_particles(600);
+  space.put_particles(100);
+  space.size << 30, 30, 20;
   space.gravity << 0, -GRAVITY, 0;
 
   std::vector<std::thread> threads{4};

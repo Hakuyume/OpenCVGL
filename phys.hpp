@@ -44,7 +44,7 @@ private:
   static void update_particles(Space &space, const size_t id);
 
 public:
-  Eigen::Vector3d gravity;
+  Eigen::Vector3d size, gravity;
   std::vector<Eigen::Vector3d> positions(void);
   void add_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);

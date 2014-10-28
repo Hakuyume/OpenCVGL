@@ -19,13 +19,23 @@ static const int texture_cubes[]{
     GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
     GL_TEXTURE_CUBE_MAP_POSITIVE_Y};
 
-void renderer_draw(Space &space)
+void renderer_draw(const int width, const int height, Space &space)
 {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(60, (double)width / height, 150, 500);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glViewport(0, 0, width, height);
+
   glBindTexture(GL_TEXTURE_2D, backtex);
 
   glPushMatrix();
-  glScaled(500, 500, 500);
-  glTranslated(0, 0, -0.5);
+  glScaled((double)500 / sqrt(3), (double)500 / sqrt(3), 250);
+  glTranslated(0, 0, -1);
 
   glBegin(GL_QUADS);
   glNormal3d(0, 0, -1);
@@ -46,12 +56,14 @@ void renderer_draw(Space &space)
   glUniform1i(cubemap, 0);
 
   glPushMatrix();
-  glTranslated(0, 0, -100);
-  glScaled(2.5, 2.5, 5);
+  glTranslated(0, 0, -sqrt(3) * 100);
+  glScaled(100.0 / space.size(0), 100.0 / space.size(1), 100.0 / space.size(2));
   draw_particles(space);
   glPopMatrix();
 
   glBindTexture(GL_TEXTURE_2D, 0);
+
+  glutSwapBuffers();
 }
 
 void read_source(const GLuint shader, const char *file)

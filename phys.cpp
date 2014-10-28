@@ -9,13 +9,11 @@ static const double SPH_PMASS = 0.00020543;
 static const double SPH_SIMSCALE = 0.004;
 static const double KERNEL_SIZE = 0.01;
 static const double SPH_VISC = 0.2;
-static const double SPH_LIMIT = 200.0;
+static const double SPH_LIMIT = 100.0;
 static const double SPH_RADIUS = 0.004;
 static const double SPH_EPSILON = 0.00001;
 static const double SPH_EXTSTIFF = 10000.0;
 static const double SPH_EXTDAMP = 256.0;
-static const Eigen::Vector3d MIN{-30, -30, -10};
-static const Eigen::Vector3d MAX{+30, +30, +10};
 
 std::vector<Eigen::Vector3d> Space::positions(void)
 {
@@ -182,10 +180,10 @@ void Particle::calc_accel(Space &space)
     accel *= SPH_LIMIT / accel.norm();
 
   for (int i = 0; i < 3; i++) {
-    double diff = 2.0 * SPH_RADIUS - (pos(i) - MIN(i)) * SPH_SIMSCALE;
+    double diff = 2.0 * SPH_RADIUS - (pos(i) + space.size(i)) * SPH_SIMSCALE;
     if (diff > SPH_EPSILON)
       accel(i) += SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(i);
-    diff = 2.0 * SPH_RADIUS - (MAX(i) - pos(i)) * SPH_SIMSCALE;
+    diff = 2.0 * SPH_RADIUS - (space.size(i) - pos(i)) * SPH_SIMSCALE;
     if (diff > SPH_EPSILON)
       accel(i) -= SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(i);
   }
