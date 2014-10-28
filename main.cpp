@@ -28,7 +28,7 @@ void keyboard(unsigned char key, int x, int y)
   switch (key) {
   case 'a':
     space.add_particle(Eigen::Vector3d(
-        (((double)x * 2 / width) - 1) * space.size(0),
+        (((double)x * 2 / width) - 1) * space.size(0) * (double)width / height,
         -(((double)y * 2 / height) - 1) * space.size(1),
         0));
   }
