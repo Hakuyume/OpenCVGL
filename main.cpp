@@ -1,5 +1,4 @@
 #include <GL/glut.h>
-#include <cmath>
 #include "phys.hpp"
 #include "render.hpp"
 
