@@ -15,16 +15,17 @@ static const double SPH_EPSILON = 0.00001;
 static const double SPH_EXTSTIFF = 10000.0;
 static const double SPH_EXTDAMP = 256.0;
 
-std::vector<Eigen::Vector3d> Space::positions(void)
+std::vector<ParticleInfo> Space::get_partilce_info(void)
 {
   std::lock_guard<std::mutex> lock{mutex};
-  return poses;
+  return particle_info;
 }
 
-void Space::add_particle(const Eigen::Vector3d &pos)
+void Space::add_particle(const ParticleInfo &pt_info)
 {
   Particle p;
-  p.pos = pos;
+  p.pos = pt_info.pos;
+  p.color = pt_info.color;
 
   mutex.lock();
   add_queue.push_back(p);
@@ -39,13 +40,13 @@ void Space::remove_particle(const Eigen::Vector3d &pos)
   mutex.unlock();
 }
 
-void Space::put_particles(size_t n)
+void Space::put_particles(size_t n, const Eigen::Vector3d &color)
 {
   for (size_t i = 0; i < n; i++)
-    add_particle(Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE);
+    add_particle(ParticleInfo{Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE, color});
 }
 
-void Space::update_neighbor_map(void)
+void Space::pre_calc(void)
 {
   mutex.lock();
 
@@ -53,7 +54,7 @@ void Space::update_neighbor_map(void)
   add_queue.clear();
 
   neighbor_map.clear();
-  poses.clear();
+  particle_info.clear();
 
   for (auto &pt : particles) {
     if (rm && (pt.pos - rm_pos).norm() < KERNEL_SIZE / SPH_SIMSCALE)
@@ -66,7 +67,8 @@ void Space::update_neighbor_map(void)
       iter = neighbor_map.insert(iter, NeighborMap::value_type{pt.pos / (KERNEL_SIZE / SPH_SIMSCALE), pts});
     }
     iter->second.push_back(&pt);
-    poses.push_back(pt.pos);
+
+    particle_info.push_back(ParticleInfo{pt});
   }
 
   rm = false;
@@ -97,7 +99,7 @@ void Space::update_particles(Space &space, const size_t id)
 
   while (space.simulate) {
     if (id == 0)
-      space.update_neighbor_map();
+      space.pre_calc();
     space.br.wait();
 
     for (size_t i = id; i < space.particles.size(); i += threads)
@@ -135,6 +137,16 @@ void Space::stop_simulate(void)
     th.join();
 
   threads.clear();
+}
+
+ParticleInfo::ParticleInfo(const Particle &pt)
+    : pos{pt.pos}, color{pt.color}
+{
+}
+
+ParticleInfo::ParticleInfo(const Eigen::Vector3d &pos, const Eigen::Vector3d &color)
+    : pos{pos}, color{color}
+{
 }
 
 Particle::Particle(void)

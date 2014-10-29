@@ -93,16 +93,16 @@ void draw_particles(Space &space)
 {
   std::map<Eigen::Vector3i, Cube, CompVector> cubes;
 
-  std::vector<Eigen::Vector3d> positions{space.positions()};
+  std::vector<ParticleInfo> particles{space.get_partilce_info()};
 
-  for (auto &pt : positions)
+  for (auto &pt : particles)
     for (int x = -MC_NEIGHBOR; x <= MC_NEIGHBOR; x++)
       for (int y = -MC_NEIGHBOR; y <= MC_NEIGHBOR; y++)
         for (int z = -MC_NEIGHBOR; z <= MC_NEIGHBOR; z++) {
           Eigen::Vector3i p;
-          p(0) = floor(pt(0) / MC_SIZE + x);
-          p(1) = floor(pt(1) / MC_SIZE + y);
-          p(2) = floor(pt(2) / MC_SIZE + z);
+          p(0) = floor(pt.pos(0) / MC_SIZE + x);
+          p(1) = floor(pt.pos(1) / MC_SIZE + y);
+          p(2) = floor(pt.pos(2) / MC_SIZE + z);
 
           auto iter = cubes.find(p);
           if (iter == cubes.end()) {
@@ -113,7 +113,7 @@ void draw_particles(Space &space)
           for (int dx = 0; dx <= 1; dx++)
             for (int dy = 0; dy <= 1; dy++)
               for (int dz = 0; dz <= 1; dz++) {
-                Eigen::Vector3d r = pt;
+                Eigen::Vector3d r = pt.pos;
                 r(0) -= (double)(p(0) + dx) * MC_SIZE;
                 r(1) -= (double)(p(1) + dy) * MC_SIZE;
                 r(2) -= (double)(p(2) + dz) * MC_SIZE;

@@ -34,7 +34,7 @@ void keyboard(unsigned char key, int x, int y)
 {
   switch (key) {
   case 'a':
-    space.add_particle(conv_pos(x, y));
+    space.add_particle(ParticleInfo{conv_pos(x, y), Eigen::Vector3d{0.7, 0.7, 1}});
     break;
   case 'd':
     space.remove_particle(conv_pos(x, y));
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
   renderer_init();
 
-  space.put_particles(100);
+  space.put_particles(100, Eigen::Vector3d{0.7, 0.7, 1});
   space.size << 30, 30, 20;
   space.gravity << 0, -GRAVITY, 0;
 
