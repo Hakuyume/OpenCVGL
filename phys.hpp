@@ -45,6 +45,8 @@ private:
   bool rm;
   Eigen::Vector3d rm_pos;
   static void update_particles(Space &space, const size_t id);
+  std::vector<std::thread> threads;
+  bool simulate;
 
 public:
   Eigen::Vector3d size, gravity;
@@ -53,5 +55,6 @@ public:
   void remove_particle(const Eigen::Vector3d &pos);
   void put_particles(size_t n);
   void neighbor(const Eigen::Vector3d &r, std::list<Particle *> &neigbors) const;
-  void start_simulate(std::vector<std::thread> &threads);
+  void start_simulate(size_t n);
+  void stop_simulate(void);
 };

@@ -40,6 +40,9 @@ void keyboard(unsigned char key, int x, int y)
   case 'd':
     space.remove_particle(conv_pos(x, y));
     break;
+  case 'q':
+    space.stop_simulate();
+    exit(0);
   }
 }
 
@@ -95,10 +98,7 @@ int main(int argc, char *argv[])
   space.size << 30, 30, 20;
   space.gravity << 0, -GRAVITY, 0;
 
-  std::vector<std::thread> threads{4};
-  space.start_simulate(threads);
-  for (auto &th : threads)
-    th.detach();
+  space.start_simulate(4);
 
   glutMainLoop();
 

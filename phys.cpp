@@ -95,7 +95,7 @@ void Space::update_particles(Space &space, const size_t id)
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  while (true) {
+  while (space.simulate) {
     if (id == 0)
       space.update_neighbor_map();
     space.br.wait();
@@ -118,12 +118,23 @@ void Space::update_particles(Space &space, const size_t id)
   }
 }
 
-void Space::start_simulate(std::vector<std::thread> &threads)
+void Space::start_simulate(size_t n)
 {
-  br.size(threads.size());
+  simulate = true;
+  br.size(n);
 
-  for (size_t id = 0; id < threads.size(); id++)
-    threads.at(id) = std::thread{update_particles, std::ref(*this), id};
+  for (size_t id = 0; id < n; id++)
+    threads.push_back(std::thread{update_particles, std::ref(*this), id});
+}
+
+void Space::stop_simulate(void)
+{
+  simulate = false;
+
+  for (auto &th : threads)
+    th.join();
+
+  threads.clear();
 }
 
 Particle::Particle(void)
