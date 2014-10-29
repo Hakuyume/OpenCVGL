@@ -15,7 +15,7 @@ class Particle
 {
 private:
   double rho, prs;
-  Eigen::Vector3d vel, accel;
+  Eigen::Vector3d vel, accel, d_color;
   std::list<Particle *> neighbors;
   static double poly6kern(const Eigen::Vector3d &r);
   static double lapkern(const Eigen::Vector3d &r);

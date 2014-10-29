@@ -204,12 +204,14 @@ void Particle::calc_accel(Space &space)
 {
   Eigen::Vector3d force_v{0, 0, 0};
   Eigen::Vector3d force_p{0, 0, 0};
+  d_color = Eigen::Vector3d::Zero();
 
   for (auto &pt : neighbors) {
     if (pos == pt->pos)
       continue;
     force_v += (pt->vel - vel) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
     force_p -= (prs + pt->prs) / 2 * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * spikykern_grad(pt->pos - pos);
+    d_color += (pt->color - color) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
   }
 
   accel = (force_v + force_p) / SPH_PMASS;
@@ -233,5 +235,6 @@ void Particle::move(const double dt)
 {
   vel += accel * dt;
   pos += vel * dt / SPH_SIMSCALE;
+  color += d_color * dt / SPH_SIMSCALE;
   pos(2) = 0;
 }
