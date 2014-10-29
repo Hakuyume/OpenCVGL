@@ -33,7 +33,13 @@ void reshape(int w, int h)
 void keyboard(unsigned char key, int x, int y)
 {
   switch (key) {
-  case 'a':
+  case 'r':
+    space.add_particle(ParticleInfo{conv_pos(x, y), Eigen::Vector3d{1, 0.7, 0.7}});
+    break;
+  case 'g':
+    space.add_particle(ParticleInfo{conv_pos(x, y), Eigen::Vector3d{0.7, 1, 0.7}});
+    break;
+  case 'b':
     space.add_particle(ParticleInfo{conv_pos(x, y), Eigen::Vector3d{0.7, 0.7, 1}});
     break;
   case 'd':

@@ -7,13 +7,14 @@
 
 struct Vertex
 {
-  Eigen::Vector3d pos, norm;
+  Eigen::Vector3d pos, norm, color;
 };
 
 class Cube
 {
 public:
   double q[2][2][2];
+  Eigen::Vector3d c[2][2][2];
   Cube(void);
   void draw(void);
 };
@@ -21,6 +22,10 @@ public:
 Cube::Cube(void)
     : q{}
 {
+  for (int x = 0; x <= 1; x++)
+    for (int y = 0; y <= 1; y++)
+      for (int z = 0; z <= 1; z++)
+        c[x][y][z] = Eigen::Vector3d::Zero();
 }
 
 void Cube::draw(void)
@@ -41,33 +46,39 @@ void Cube::draw(void)
         Vertex v;
         v.pos << 0.5, i, j;
         v.norm << 1, 0, 0;
+        v.color = c[0][i][j] / q[0][i][j];
         vs.push_back(v);
       } else if (~m[0][i][j] & m[1][i][j]) {
         Vertex v;
         v.pos << 0.5, i, j;
         v.norm << -1, 0, 0;
+        v.color = c[1][i][j] / q[1][i][j];
         vs.push_back(v);
       }
       if (m[j][0][i] & ~m[j][1][i]) {
         Vertex v;
         v.pos << j, 0.5, i;
         v.norm << 0, 1, 0;
+        v.color = c[j][0][i] / q[j][0][i];
         vs.push_back(v);
       } else if (~m[j][0][i] & m[j][1][i]) {
         Vertex v;
         v.pos << j, 0.5, i;
         v.norm << 0, -1, 0;
+        v.color = c[j][1][i] / q[j][1][i];
         vs.push_back(v);
       }
       if (m[i][j][0] & ~m[i][j][1]) {
         Vertex v;
         v.pos << i, j, 0.5;
         v.norm << 0, 0, 1;
+        v.color = c[i][j][0] / q[i][j][0];
         vs.push_back(v);
       } else if (~m[i][j][0] & m[i][j][1]) {
         Vertex v;
         v.pos << i, j, 0.5;
         v.norm << 0, 0, -1;
+        v.color = c[i][j][1] / q[i][j][1];
         vs.push_back(v);
       }
     }
@@ -76,13 +87,15 @@ void Cube::draw(void)
   for (auto v1 = vs.begin(); v1 != vs.end(); v1++)
     for (auto v2 = v1 + 1; v2 != vs.end(); v2++)
       for (auto v3 = v2 + 1; v3 != vs.end(); v3++) {
-        glColor3d(0.9, 0.9, 1);
+        glColor3d(v1->color(0), v1->color(1), v1->color(2));
         glNormal3d(v1->norm(0), v1->norm(1), v1->norm(2));
         glVertex3d(v1->pos(0), v1->pos(1), v1->pos(2));
 
+        glColor3d(v2->color(0), v2->color(1), v2->color(2));
         glNormal3d(v2->norm(0), v2->norm(1), v2->norm(2));
         glVertex3d(v2->pos(0), v2->pos(1), v2->pos(2));
 
+        glColor3d(v3->color(0), v3->color(1), v3->color(2));
         glNormal3d(v3->norm(0), v3->norm(1), v3->norm(2));
         glVertex3d(v3->pos(0), v3->pos(1), v3->pos(2));
       }
@@ -119,8 +132,11 @@ void draw_particles(Space &space)
                 r(2) -= (double)(p(2) + dz) * MC_SIZE;
 
                 double c = MC_SIZE * MC_NEIGHBOR - r.norm();
-                if (c > 0)
-                  iter->second.q[dx][dy][dz] += c * c * c;
+                if (c > 0) {
+                  double dq = c * c * c;
+                  iter->second.q[dx][dy][dz] += dq;
+                  iter->second.c[dx][dy][dz] += pt.color * dq;
+                }
               }
         }
 
