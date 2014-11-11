@@ -1,9 +1,9 @@
 #include <GL/glut.h>
 #include "mc.hpp"
 
-#define MC_SIZE 0.75
+#define MC_SIZE 3e-3
 #define MC_NEIGHBOR 3
-#define MC_THRESHOLD 2
+#define MC_THRESHOLD 1.5e-7
 
 struct Vertex
 {

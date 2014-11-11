@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
   renderer_init();
 
   space.put_particles(100, Eigen::Vector3d{0.7, 0.7, 1});
-  space.size << 30, 30, 20;
+  space.size << 0.12, 0.12, 0.08;
   space.gravity << 0, -GRAVITY, 0;
 
   space.start_simulate(4);

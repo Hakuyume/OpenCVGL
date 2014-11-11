@@ -6,7 +6,6 @@ static const double DT_MAX = 0.004;
 static const double SPH_RESTDENSITY = 600.0;
 static const double SPH_INTSTIFF = 3.0;
 static const double SPH_PMASS = 0.00020543;
-static const double SPH_SIMSCALE = 0.004;
 static const double KERNEL_SIZE = 0.01;
 static const double SPH_VISC = 0.2;
 static const double SPH_LIMIT = 100.0;
@@ -24,7 +23,7 @@ std::vector<ParticleInfo> Space::get_partilce_info(void)
 void Space::add_particle(const ParticleInfo &pt_info)
 {
   Particle p;
-  p.pos = pt_info.pos * SPH_SIMSCALE;
+  p.pos = pt_info.pos;
   p.color = pt_info.color;
 
   mutex.lock();
@@ -36,14 +35,14 @@ void Space::remove_particle(const Eigen::Vector3d &pos)
 {
   mutex.lock();
   rm = true;
-  rm_pos = pos * SPH_SIMSCALE;
+  rm_pos = pos;
   mutex.unlock();
 }
 
 void Space::put_particles(size_t n, const Eigen::Vector3d &color)
 {
   for (size_t i = 0; i < n; i++)
-    add_particle(ParticleInfo{Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY) / SPH_SIMSCALE, color});
+    add_particle(ParticleInfo{Eigen::Vector3d::Random() * cbrt(n * SPH_PMASS / SPH_RESTDENSITY), color});
 }
 
 void Space::pre_calc(void)
@@ -140,7 +139,7 @@ void Space::stop_simulate(void)
 }
 
 ParticleInfo::ParticleInfo(const Particle &pt)
-    : pos{pt.pos / SPH_SIMSCALE}, color{pt.color}
+    : pos{pt.pos}, color{pt.color}
 {
 }
 
@@ -220,10 +219,10 @@ void Particle::calc_accel(Space &space)
     accel *= SPH_LIMIT / accel.norm();
 
   for (int i = 0; i < 3; i++) {
-    double diff = 2.0 * SPH_RADIUS - (pos(i) + space.size(i) * SPH_SIMSCALE);
+    double diff = 2.0 * SPH_RADIUS - (pos(i) + space.size(i));
     if (diff > SPH_EPSILON)
       accel(i) += SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(i);
-    diff = 2.0 * SPH_RADIUS - (space.size(i) * SPH_SIMSCALE - pos(i));
+    diff = 2.0 * SPH_RADIUS - (space.size(i) - pos(i));
     if (diff > SPH_EPSILON)
       accel(i) -= SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(i);
   }
