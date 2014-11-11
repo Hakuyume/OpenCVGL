@@ -24,7 +24,7 @@ std::vector<ParticleInfo> Space::get_partilce_info(void)
 void Space::add_particle(const ParticleInfo &pt_info)
 {
   Particle p;
-  p.pos = pt_info.pos;
+  p.pos = pt_info.pos * SPH_SIMSCALE;
   p.color = pt_info.color;
 
   mutex.lock();
@@ -36,7 +36,7 @@ void Space::remove_particle(const Eigen::Vector3d &pos)
 {
   mutex.lock();
   rm = true;
-  rm_pos = pos;
+  rm_pos = pos * SPH_SIMSCALE;
   mutex.unlock();
 }
 
@@ -57,14 +57,14 @@ void Space::pre_calc(void)
   particle_info.clear();
 
   for (auto &pt : particles) {
-    if (rm && (pt.pos - rm_pos).norm() < KERNEL_SIZE / SPH_SIMSCALE)
+    if (rm && (pt.pos - rm_pos).norm() < KERNEL_SIZE)
       pt.alive = false;
     if (!pt.alive)
       continue;
-    auto iter = neighbor_map.find(pt.pos / (KERNEL_SIZE / SPH_SIMSCALE));
+    auto iter = neighbor_map.find(pt.pos / KERNEL_SIZE);
     if (iter == neighbor_map.end()) {
       std::list<Particle *> pts;
-      iter = neighbor_map.insert(iter, NeighborMap::value_type{pt.pos / (KERNEL_SIZE / SPH_SIMSCALE), pts});
+      iter = neighbor_map.insert(iter, NeighborMap::value_type{pt.pos / KERNEL_SIZE, pts});
     }
     iter->second.push_back(&pt);
 
@@ -84,7 +84,7 @@ void Space::neighbor(const Eigen::Vector3d &r, std::list<Particle *> &neighbors)
       for (int z = -1; z <= 1; z++) {
         Eigen::Vector3d v{(double)x, (double)y, (double)z};
 
-        auto iter = neighbor_map.find(r / (KERNEL_SIZE / SPH_SIMSCALE) + v);
+        auto iter = neighbor_map.find(r / KERNEL_SIZE + v);
         if (iter != neighbor_map.end())
           for (auto &pt : iter->second)
             neighbors.push_back(pt);
@@ -140,7 +140,7 @@ void Space::stop_simulate(void)
 }
 
 ParticleInfo::ParticleInfo(const Particle &pt)
-    : pos{pt.pos}, color{pt.color}
+    : pos{pt.pos / SPH_SIMSCALE}, color{pt.color}
 {
 }
 
@@ -159,7 +159,7 @@ double Particle::poly6kern(const Eigen::Vector3d &r)
 {
   static const double k = 315.0 / (64.0 * M_PI * pow(KERNEL_SIZE, 9));
 
-  double c = KERNEL_SIZE * KERNEL_SIZE - r.norm() * r.norm() * SPH_SIMSCALE * SPH_SIMSCALE;
+  double c = KERNEL_SIZE * KERNEL_SIZE - r.norm() * r.norm();
 
   if (c > 0)
     return k * c * c * c;
@@ -171,9 +171,9 @@ double Particle::lapkern(const Eigen::Vector3d &r)
 {
   static const double k = 45.0 / (M_PI * pow(KERNEL_SIZE, 6));
 
-  double c = KERNEL_SIZE - r.norm() * SPH_SIMSCALE;
+  double c = KERNEL_SIZE - r.norm();
   if (c > 0)
-    return k * SPH_VISC * c;
+    return k * c;
   else
     return 0;
 }
@@ -182,7 +182,7 @@ Eigen::Vector3d Particle::spikykern_grad(const Eigen::Vector3d &r)
 {
   static const double k = 45.0 / (M_PI * pow(KERNEL_SIZE, 6));
 
-  double c = KERNEL_SIZE - r.norm() * SPH_SIMSCALE;
+  double c = KERNEL_SIZE - r.norm();
   if (c > 0)
     return k * c * c * r / r.norm();
   else
@@ -209,9 +209,9 @@ void Particle::calc_accel(Space &space)
   for (auto &pt : neighbors) {
     if (pos == pt->pos)
       continue;
-    force_v += (pt->vel - vel) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
+    force_v += SPH_VISC * (pt->vel - vel) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
     force_p -= (prs + pt->prs) / 2 * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * spikykern_grad(pt->pos - pos);
-    d_color += (pt->color - color) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
+    d_color += 20 * (pt->color - color) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
   }
 
   accel = (force_v + force_p) / SPH_PMASS;
@@ -220,10 +220,10 @@ void Particle::calc_accel(Space &space)
     accel *= SPH_LIMIT / accel.norm();
 
   for (int i = 0; i < 3; i++) {
-    double diff = 2.0 * SPH_RADIUS - (pos(i) + space.size(i)) * SPH_SIMSCALE;
+    double diff = 2.0 * SPH_RADIUS - (pos(i) + space.size(i) * SPH_SIMSCALE);
     if (diff > SPH_EPSILON)
       accel(i) += SPH_EXTSTIFF * diff - SPH_EXTDAMP * vel(i);
-    diff = 2.0 * SPH_RADIUS - (space.size(i) - pos(i)) * SPH_SIMSCALE;
+    diff = 2.0 * SPH_RADIUS - (space.size(i) * SPH_SIMSCALE - pos(i));
     if (diff > SPH_EPSILON)
       accel(i) -= SPH_EXTSTIFF * diff + SPH_EXTDAMP * vel(i);
   }
@@ -234,7 +234,7 @@ void Particle::calc_accel(Space &space)
 void Particle::move(const double dt)
 {
   vel += accel * dt;
-  pos += vel * dt / SPH_SIMSCALE;
-  color += d_color * dt / SPH_SIMSCALE;
+  pos += vel * dt;
+  color += d_color * dt;
   pos(2) = 0;
 }
