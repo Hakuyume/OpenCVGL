@@ -179,7 +179,7 @@ double Particle::lapkern(const Eigen::Vector3d &r)
 
 Eigen::Vector3d Particle::spikykern_grad(const Eigen::Vector3d &r)
 {
-  static const double k = 45.0 / (M_PI * pow(KERNEL_SIZE, 6));
+  static const double k = -45.0 / (M_PI * pow(KERNEL_SIZE, 6));
 
   double c = KERNEL_SIZE - r.norm();
   if (c > 0)
@@ -209,7 +209,7 @@ void Particle::calc_accel(Space &space)
     if (pos == pt->pos)
       continue;
     force_v += SPH_VISC * (pt->vel - vel) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
-    force_p -= (prs + pt->prs) / 2 * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * spikykern_grad(pt->pos - pos);
+    force_p += (prs + pt->prs) / 2 * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * spikykern_grad(pt->pos - pos);
     d_color += 20 * (pt->color - color) * (SPH_PMASS / rho) * (SPH_PMASS / pt->rho) * lapkern(pt->pos - pos);
   }
 
